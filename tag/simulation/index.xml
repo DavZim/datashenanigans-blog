@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>simulation | Data Shenanigans</title>
+    <link>/tag/simulation/</link>
+      <atom:link href="/tag/simulation/index.xml" rel="self" type="application/rss+xml" />
+    <description>simulation</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Mon, 24 Oct 2016 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/images/logo.svg</url>
+      <title>simulation</title>
+      <link>/tag/simulation/</link>
+    </image>
+    
+    <item>
+      <title>The Importance of Out-of-Sample Tests and Lags in Forecasts and Trading Algorithms</title>
+      <link>/blog/2016-10-24-oos-testing/</link>
+      <pubDate>Mon, 24 Oct 2016 00:00:00 +0000</pubDate>
+      <guid>/blog/2016-10-24-oos-testing/</guid>
+      <description>
+
+
+&lt;p&gt;I recently had the opportunity to listen to some great minds in the area of high-frequency data and trading.
+While I won’t go into the details about what has been said, I wanted to illustrate the importance of proper out-of-sample testing and proper variable lags in potential trade algorithms or arbitrage models that has been brought up.
+This topic can also be generalized to a certain degree to all forecasts.
+The following example considers a case where some arbitrary trading algorithm is being tested: first without any proper tests, then with proper variable lags, and lastly using out-of-sample methodology.
+I already downloaded the data (returns for all DJIA-components from 2010 to mid-sept 2016) and uploaded it to my &lt;a href=&#34;https://github.com/DavZim/Out-of-Sample-Testing&#34;&gt;github-page&lt;/a&gt;.
+We can load the data like this:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(data.table)
+url &amp;lt;- &amp;quot;https://raw.githubusercontent.com/DavZim/Out-of-Sample-Testing/master/data/djia_data.csv&amp;quot;
+df &amp;lt;- fread(url)
+df[, date := as.Date(date)]&lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;the-algorithm&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;0. The “Algorithm”&lt;/h2&gt;
+&lt;p&gt;Say we have a simple algorithm that is supposed to predict the return of some stock (in this case AAPL) with some exogenous inputs (such as returns of other stocks in the Dow-Jones Industrial Average Index) using a linear model (not very realistic, but it serves the purpose for now).
+We would take a long position if our model predicts positive returns and a short position otherwise.
+If we control neither for out-of-sample, nor for lags, we receive a portfolio development which would look like this, pretty exciting isn’t it?!&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(ggplot2)
+library(scales)
+# copy the data
+df_none &amp;lt;- copy(df)
+
+# train the model
+mdl1 &amp;lt;- lm(AAPL ~ ., data = df_none[, !&amp;quot;date&amp;quot;, with = FALSE])
+
+# predict the values (apply the model)
+df_none[, AAPL_fcast := predict(mdl1, newdata = df_none)]
+
+# calcaulate the earnings for the algorithm
+df_none[, earnings := cumprod(1 + ifelse(sign(AAPL_fcast) &amp;gt; 0, AAPL, -AAPL))]
+
+# plot the data
+ggplot(df_none, aes(x = date, y = earnings)) + 
+  geom_line(color = &amp;quot;#762a83&amp;quot;) + 
+  labs(x = &amp;quot;Date&amp;quot;, y = &amp;quot;Earnings Multiple&amp;quot;, title = &amp;quot;No Proper Tests&amp;quot;) +
+  theme_light() +
+  scale_y_continuous(labels = comma)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/2016-10-24-oos-testing_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Something’s fishy!
+I wouldn’t expect a trading algorithm based on a simple linear regression to turn USD 1 initial investment into USD 25,876.65 after 6 years.
+Why does that performance seem so wrong? That is because an algorithm at the time of prediction wouldn’t have access to the data that we trained it on.
+To simulate a more realistic situation we can use lags and out-of-sample testing.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;lags&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;1. Lags&lt;/h2&gt;
+&lt;p&gt;The key idea behind using lags is, that your trading algorithm only has access to the information it would have under realistic conditions, that is mostly, to predict the price of the next time unit &lt;span class=&#34;math inline&#34;&gt;\(t + 1\)&lt;/span&gt;, the latest information the algorithm can possibly have is from the current time unit &lt;span class=&#34;math inline&#34;&gt;\(t\)&lt;/span&gt;.
+For example, if we want to predict the price for tomorrow, we can only acces information from today.
+To backtest our strategy, we will have to make sure that the algorithm sees only the lagged exogenous variables (the returns of all the other DJIA-components).
+To save us some time, we can also take the lead of the endogenous variable as this is equivalent to lagging all other variables (except for the date-variable in this case, but that matters only for the visualization).&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# copy and clean the data and calculate the lead
+df_lag &amp;lt;- copy(df)
+df_lag[, AAPL := shift(AAPL, type = &amp;quot;lead&amp;quot;)]
+df_lag &amp;lt;- na.omit(df_lag)
+
+# train the model
+mdl_lag &amp;lt;- lm(AAPL ~ ., data = df_lag[, !&amp;quot;date&amp;quot;, with = FALSE])
+
+# predict the new values
+df_lag[, AAPL_lead_fcst := predict(mdl_lag, newdata = df_lag)]
+
+# compute the earnings from the algorithm
+df_lag[, earnings_lead := cumprod(1 + ifelse(sign(AAPL_lead_fcst) &amp;gt; 0, 
+                                             AAPL, -AAPL))]
+
+# convert into a data format that ggplot likes
+df_plot &amp;lt;- df_lag[, .(date, AAPL_earnings = cumprod(1 + AAPL),
+                      earnings_lead)]
+df_plot &amp;lt;- melt(df_plot, id.vars = &amp;quot;date&amp;quot;)
+
+# plot the data
+ggplot(df_plot, aes(x = date, y = value, color = variable)) + 
+  geom_line() +
+  labs(x = &amp;quot;Date&amp;quot;, y = &amp;quot;Earnings Multiple&amp;quot;, title = &amp;quot;Lagged Variable&amp;quot;) +
+  scale_color_manual(name = &amp;quot;Investment&amp;quot;, labels = c(&amp;quot;AAPL&amp;quot;, &amp;quot;Algorithm&amp;quot;),
+                     values = c(&amp;quot;#1b7837&amp;quot;, &amp;quot;#762a83&amp;quot;)) + 
+  theme_light()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/2016-10-24-oos-testing_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;That looks a bit more reasonable, though still unrealistic.
+The algorithm outperforms the Apple stock by some magnitude of 6; an investment of USD 1 “only” gets turned into 25 (an annual growth rate of rougly 60%).
+This unreasonable high return is due to the fact that we still haven’t conducted a proper out-of-sample test.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;out-of-sample-testing&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;2. Out-of-Sample Testing&lt;/h2&gt;
+&lt;p&gt;So far we have trained the model (or specified if you wish) on the same dataset that we validated the quality of the algorithm on.
+On a meta-level you can think that the information which we use to test the algorithm is already used in the model, thus the model is to a certain degree a self-fulfilling prophecy (to a certain degree, this is also related to the concept of overfitting).
+To avoid this, we can split the dataset into two samples for training and validation.
+We use the training dataset to train the model and the validation dataset to test the algorithm “out-of-sample”.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# copy and clean the data
+df_oos &amp;lt;- copy(df)
+df_oos[, AAPL := shift(AAPL, type = &amp;quot;lead&amp;quot;)]
+df_oos &amp;lt;- na.omit(df_oos)
+
+# split the data into training and validation sample
+splitDate &amp;lt;- as.Date(&amp;quot;2015-12-31&amp;quot;)
+df_training &amp;lt;- df_oos[date &amp;lt; splitDate]
+df_validation &amp;lt;- df_oos[date &amp;gt;= splitDate]
+
+# Train the model on the training dataset
+mdl3 &amp;lt;- lm(AAPL ~ ., data = df_training[, !&amp;quot;date&amp;quot;, with = FALSE])
+
+# In Sample (for comparison and plotting only) - NOT the out-of-sample test
+df_training[, AAPL_fcast := predict(mdl3, newdata = df_training)]
+df_training[, earnings_is := cumprod(1 + ifelse(sign(AAPL_fcast) &amp;gt; 0, 
+                                                AAPL, -AAPL))]
+
+# melt into a data format that ggplot likes
+plot_df_is &amp;lt;- df_training[, .(date, AAPL = cumprod(1 + AAPL),
+                              algorithm = earnings_is)]
+plot_df_is &amp;lt;- melt(plot_df_is, id.vars = &amp;quot;date&amp;quot;)
+plot_df_is[, type := &amp;quot;insample&amp;quot;]
+
+# Out-of Sample Test
+df_validation[, AAPL_oos_fcast := predict(mdl3, newdata = df_validation)]
+df_validation[, &amp;#39;:=&amp;#39; (
+  earnings_oos_lead = cumprod(1 + ifelse(sign(AAPL_oos_fcast) &amp;gt; 0, 
+                                         AAPL, -AAPL))
+)]
+
+# melt into a data format that ggplot likes
+plot_df_oos &amp;lt;- df_validation[, .(date,
+                                 AAPL = cumprod(1 + AAPL), 
+                                 algorithm = earnings_oos_lead)]
+plot_df_oos &amp;lt;- melt(plot_df_oos, id.vars = &amp;quot;date&amp;quot;)
+plot_df_oos[, type := &amp;quot;oos&amp;quot;]
+
+plot_df &amp;lt;- rbindlist(list(plot_df_is, plot_df_oos))
+
+# plot the data
+facet_names &amp;lt;- c(&amp;quot;insample&amp;quot; = &amp;quot;In-Sample&amp;quot;, &amp;quot;oos&amp;quot; = &amp;quot;Out-of-Sample &amp;#39;16&amp;quot;)
+
+ggplot(plot_df, aes(x = date, y = value, color = variable)) + 
+  geom_line() +
+  labs(x = &amp;quot;Date&amp;quot;, y = &amp;quot;Earnings Multiple&amp;quot;, 
+       title = &amp;quot;Lagged Variable + Out-of-Sample Test&amp;quot;) +
+  scale_color_manual(name = &amp;quot;Investment&amp;quot;, labels = c(&amp;quot;AAPL&amp;quot;, &amp;quot;Algorithm&amp;quot;),
+                     values = c(&amp;quot;#1b7837&amp;quot;, &amp;quot;#762a83&amp;quot;)) + 
+  theme_light() + 
+  facet_wrap(~type, scales = &amp;quot;free&amp;quot;, labeller = as_labeller(facet_names))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/2016-10-24-oos-testing_files/figure-html/unnamed-chunk-5-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;As expected, the algorithm returns less than the stock it matches against (AAPL).
+If we would invest in this simple algorithm, I would expect our investment to go down a lot more.
+All of this is of course without considering trading, execution, and other transaction costs, which would even further decrease the returns of our trading algorithm.
+To sum it up: If you are looking into algorithms and/or forecasts, always make sure that you apply proper out-of-sample tests and think about what information could have been used at the time of decision to avoid overfitting.
+As always, if you find this interesting, find an error, or if you have a question you are more than welcome to leave a reply or contact me directly.&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Simulating backtests of stock returns using Monte-Carlo and snowfall in parallel</title>
+      <link>/blog/2015-09-23-backtests-stock-returns/</link>
+      <pubDate>Wed, 23 Sep 2015 00:00:00 +0000</pubDate>
+      <guid>/blog/2015-09-23-backtests-stock-returns/</guid>
+      <description>
+
+
+&lt;p&gt;You could say that the following post is an answer/comment/addition to &lt;a href=&#34;http://www.quintuitive.com/2015/09/19/when-is-a-backtest-too-good-to-be-true-part-two/&#34;&gt;Quintuitive&lt;/a&gt;, though I would consider it as a small introduction to parallel computing with &lt;code&gt;snowfall&lt;/code&gt; using the thoughts of Quintuitive as an example.
+A quick recap: Say you create a model that is able to forecast 60% of market directions (that is, in 6 out of 10 cases you can predict the direction of the market or an asset for a respective time-period), how well would you do using this strategy?
+Hint: if you have a model that is able to predict 60% out-of-sample (think test dataset instead of training dataset) please make sure to share the strategy with me! :)
+There are multiple ways to do it, I will show you how to simulate multiple cases using real-life financial data from the German Dax index, Monte-Carlo techniques, and parallel computing using the &lt;code&gt;snowfall&lt;/code&gt;-package of the R language.&lt;/p&gt;
+&lt;p&gt;The piece is structured as follows:&lt;/p&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;Load financial data using quantmod&lt;/li&gt;
+&lt;li&gt;Show one simulation case with a probability of 51%&lt;/li&gt;
+&lt;li&gt;Simulate n cases for one probability and average the result&lt;/li&gt;
+&lt;li&gt;Simulate k different cases with different probabilities&lt;/li&gt;
+&lt;li&gt;Use the snowfall-package to use parallel techniques&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div id=&#34;load-financial-data-using-quantmod&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;1. Load Financial Data using Quantmod&lt;/h1&gt;
+&lt;p&gt;To have some data we look at the German Dax index (&lt;code&gt;^GDAXI&lt;/code&gt;), which consists of the 30 largest companies in Germany. We can load the data and transform it to a dataframe like this:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# load packages
+library(quantmod)
+ 
+# download DAX data from Yahoo
+dax &amp;lt;- getSymbols(&amp;quot;^GDAXI&amp;quot;, from = &amp;quot;2000-01-01&amp;quot;, auto.assign = F)
+ 
+# create a data.frame Sdata, that contains the stock data
+Sdata &amp;lt;- data.frame(date = index(dax), price = as.numeric(Ad(dax)))
+ 
+# calculate returns
+Sdata$rets &amp;lt;- Sdata$price / c(NA, Sdata$price[1:(nrow(Sdata) - 1)]) - 1
+ 
+head(Sdata)
+#         date   price          rets
+# 1 2010-01-04 6048.30            NA
+# 2 2010-01-05 6031.86 -0.0027181096
+# 3 2010-01-06 6034.33  0.0004095279
+# 4 2010-01-07 6019.36 -0.0024808413
+# 5 2010-01-08 6037.61  0.0030318839
+# 6 2010-01-11 6040.50  0.0004786889
+ 
+# create a first plot to have a look at the price development
+plot(x = Sdata$date, y = Sdata$price, type = &amp;quot;l&amp;quot;, main = &amp;quot;Dax Development&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;dax_dev_init.png&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;show-one-simulation-case-with-a-probability-of-51&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;2. Show one simulation case with a probability of 51%&lt;/h1&gt;
+&lt;p&gt;Now that we have some data, we create a function &lt;code&gt;get.fprice&lt;/code&gt; that takes in three arguments: the returns of an asset, the percentage of right predictions, and an initial price of the investment (or just the first price of the benchmark).
+The function returns a vector of values of the investment.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;get.fprice &amp;lt;- function(rets, perc.right, init.price){
+  # 1. sample the goodness of the returns
+  good.forecast &amp;lt;- sample(x = c(T, F),
+                          size = length(rets),
+                          prob = c(perc.right, 1 - perc.right),
+                          replace = T)
+ 
+  # 2. get the forecasted directions, the same as the true rets
+  # if good.forecast = T
+  dir &amp;lt;- ifelse(rets &amp;gt; 0, 1, -1)
+  forecast.dir &amp;lt;- ifelse(good.forecast, dir, -dir)
+  # if the percentage sampled should be displayed
+  # mean(dir == forecast.dir, na.rm = T) 
+   
+  # 3. calculate the return of the forecast
+  forecast.ret &amp;lt;- forecast.dir * rets
+ 
+  # 4. calculate the prices
+  shift.forecast.ret &amp;lt;- forecast.ret[2:length(forecast.ret)]
+  forecast.price &amp;lt;- cumprod(1 + shift.forecast.ret) * init.price
+  forecast.price &amp;lt;- c(init.price, forecast.price)
+  return(forecast.price)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With this function we are able to create a single simulation for one probability.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# set a seed for reproducability
+set.seed(42)
+ 
+# simulate one series of prices
+Sdata$fprice &amp;lt;- get.fprice(rets = Sdata$rets, perc.right = 0.51,
+                           init.price = Sdata$price[1])
+ 
+# plot the two developments
+plot(x = Sdata$date, y = Sdata$price, type = &amp;quot;l&amp;quot;, 
+     main = &amp;quot;Dax vs. Forecast&amp;quot;, xlab = &amp;quot;Date&amp;quot;, ylab = &amp;quot;Price&amp;quot;,
+     ylim = c(0, max(Sdata$price, Sdata$fprice)))
+lines(x = Sdata$date, y = Sdata$fprice, col = &amp;quot;red&amp;quot;)
+legend(&amp;quot;topleft&amp;quot;, c(&amp;quot;Dax&amp;quot;, paste(perc.right, &amp;quot;forecast&amp;quot;)), 
+       col = 1:2, lty = 1)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;51_single_forecast.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;If you play around with the seed, you will see that not all cases show a similar picture.
+This is something inherent to simulations.
+To avoid being overly dependent on the seed value for the random number generation, we use the law of large numbers and simulate not one but multiple cases and use the average as a result.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;simulate-n-cases-for-one-probability-and-average-the-result&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;3. Simulate n cases for one probability and average the result&lt;/h1&gt;
+&lt;p&gt;Monte-Carlo based simulations are multiple simulation of random developments.
+With the next code-snippet we can simulate n cases per probability (i.e., we take n simulated paths and average them).
+First we create a function &lt;code&gt;get.fprice.n&lt;/code&gt; that works like the &lt;code&gt;get.fprice&lt;/code&gt;-function, but creates not one but &lt;code&gt;n = 10000&lt;/code&gt; cases using the apply-function family.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;get.fprice.n &amp;lt;- function(rets, perc.right, init.price, n){
+  # create a function that produces the goodness of the forecast
+  get.good.forecast &amp;lt;- function(x){
+    good.forecast &amp;lt;- sample(x = c(T, F),
+                            size = length(rets),
+                            prob = c(perc.right, 1 - perc.right),
+                            replace = T)
+    return(good.forecast)
+  }
+   
+  # 1. sample the goodness of the returns
+  good.forecasts &amp;lt;- sapply(1:n, get.good.forecast)
+   
+  # 2. get the forecasted directions, the same as the true rets 
+  # if good.forecast = T
+  dir &amp;lt;- ifelse(rets &amp;gt; 0, 1, -1)
+  forecast.dirs &amp;lt;- apply(good.forecasts, 2, function(x) {
+    ifelse(x, dir, -dir)
+  })
+    
+  # 3. calculate the return of the forecast
+  forecast.rets &amp;lt;- forecast.dirs * rets
+   
+  # 4. calculate the prices
+  forecast.prices &amp;lt;- apply(forecast.rets, 2, function(x) {
+    cumprod(1 + x[2:length(x)]) * init.price
+  })
+   
+  forecast.prices &amp;lt;- rbind(rep(init.price, ncol(forecast.prices)),
+                           forecast.prices)
+   
+  # collapse the n simulations to just one by taking the average
+  forecast.price &amp;lt;- apply(forecast.prices, 1, mean)
+  return(forecast.price)
+}
+ 
+# simulate 10.000 cases 
+# set a seed for reproducability, 
+# should not matter due to the Law Of Large Numbers
+set.seed(42)
+ 
+# simulate 10.000 series of prices
+t &amp;lt;- Sys.time()
+Sdata$fprice &amp;lt;- get.fprice.n(rets = Sdata$rets, 
+                             perc.right = 0.51,
+                             init.price = Sdata$price[1],
+                             n = 10000)
+Sys.time() - t # takes 5.69257 seconds on my machine
+ 
+# plot the two developments
+plot(x = Sdata$date, y = Sdata$price, type = &amp;quot;l&amp;quot;, 
+     main = &amp;quot;Dax vs. Forecasts&amp;quot;, xlab = &amp;quot;Date&amp;quot;, ylab = &amp;quot;Price&amp;quot;,
+     ylim = c(0, max(Sdata$price, Sdata$fprice)))
+lines(x = Sdata$date, y = Sdata$fprice, col = &amp;quot;red&amp;quot;)
+legend(&amp;quot;topleft&amp;quot;, c(&amp;quot;Dax&amp;quot;, &amp;quot;aggregated forecasts&amp;quot;), 
+       col = 1:2, lty = 1)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;aggregated_forecasts.png&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;simulate-k-different-cases-with-different-probabilities&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;4. Simulate k different cases with different probabilities&lt;/h1&gt;
+&lt;p&gt;You may want to compare not just one case with 51% but maybe 2, 5 or 100 cases (k) if the time allows it.
+The following section creates &lt;code&gt;k = 4&lt;/code&gt; cases that range from 45% to 55% of directions predicted correctly.
+Each case is simulated &lt;code&gt;n = 10000&lt;/code&gt; times and then averaged.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;k &amp;lt;- 4
+# the percentages that will be used later on
+perc.right &amp;lt;- seq(from = 0.45, to = 0.55, length.out = k)
+perc.right
+#&amp;gt; [1] 0.4500000 0.4833333 0.5166667 0.5500000
+ 
+# simulate k cases n times, equals 40.000 times
+t &amp;lt;- Sys.time()
+forecasted.prices &amp;lt;- sapply(perc.right, function(x) {
+  get.fprice.n(rets = Sdata$rets, 
+               perc.right = x,
+               init.price = Sdata$price[1],
+               n = 10000)
+})
+Sys.time() - t # takes 21.592 seconds on my machine
+ 
+# plot the results
+plot(x = Sdata$date, y = Sdata$price, type = &amp;quot;l&amp;quot;, 
+     main = &amp;quot;Dax vs. Forecasts&amp;quot;, xlab = &amp;quot;Date&amp;quot;, ylab = &amp;quot;Price&amp;quot;,
+     ylim = c(0, max(forecasted.prices, Sdata$price)))
+for (i in 1:k){
+  lines(x = Sdata$date, y = forecasted.prices[, i], col = (i + 1))
+}
+legend(&amp;quot;topleft&amp;quot;, c(&amp;quot;Dax&amp;quot;, 
+                    paste0(&amp;quot;P = &amp;quot;, round(perc.right, 2), sep = &amp;quot;)), 
+       col = 1:(k + 1), lty = 1, cex = 0.75)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;4_cases1.png&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;use-the-snowfall-package-to-use-parallel-techniques&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;5. Use the snowfall-package to use parallel techniques&lt;/h1&gt;
+&lt;p&gt;Now to the interesting part - using parallel techniques to reduce the computation time (time to beat: ~21 seconds).
+There are many packages out there in the “R-osphere”.
+I found the &lt;code&gt;snowfall&lt;/code&gt; package most useful and easiest to use.
+If you want to get a broader picture of the possibilities you should head over to &lt;a href=&#34;http://de.slideshare.net/bytemining/taking-r-to-the-limit-high-performance-computing-in-r-part-1-parallelization-la-r-users-group-727&#34;&gt;Ryan’s slides&lt;/a&gt;, which give a comprehensive analysis of high-performance computing in R.&lt;/p&gt;
+&lt;p&gt;My simplified understanding of parallel computing so far is that there is one master node (think of it as a departement head that coordinates the workers) and multiple slave nodes (the workers).
+The master node then distributes tasks to each slave that computes the result and sends it back to the master.&lt;/p&gt;
+&lt;p&gt;In snowfall we first have to specify the number of slaves by initiating the clusters with the &lt;code&gt;sfInit&lt;/code&gt; command.
+As each slave starts a new environment, we have to export the libraries, functions, and datasets that the slaves will use by calling the &lt;code&gt;sfExport&lt;/code&gt;-function (alternative we can call &lt;code&gt;sfExportAll&lt;/code&gt;, which exports all elements in the current environment).
+&lt;code&gt;Snowfall&lt;/code&gt; has it’s own set of functions that work very similar to the apply-family, which we call to hand over the computation to the master node.
+To be more precise we call &lt;code&gt;sfClusterApplyLB&lt;/code&gt; (LB stands for load balancing).
+As a last step we have to stop the cluster by calling &lt;code&gt;sfStop&lt;/code&gt;.
+Easy, right?&lt;/p&gt;
+&lt;p&gt;The full snowfall code looks like this:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# load the library
+library(snowfall)
+ 
+# initiate the data
+k &amp;lt;- 4
+perc.right &amp;lt;- seq(from = 0.45, to = 0.55, length.out = k)
+ 
+# initiate the clusters, in this case 4 slaves
+sfInit(parallel = T, cpus = 4)
+# if you are unsure how many cpus you can use, try
+# ?parallel::detectCores
+# parallel::detectCores(logical = T)
+ 
+# export the necessary data and functions to each cluster
+sfExport(&amp;quot;get.fprice.n&amp;quot;, &amp;quot;Sdata&amp;quot;)
+ 
+t &amp;lt;- Sys.time()
+# use the snowfall cluster-apply, which works similar to sapply 
+# note that I used sfClusterApplyLB and not sfClusterApply 
+# the LB stands for Load-Balancing
+result &amp;lt;- sfClusterApplyLB(perc.right,  function(x){
+  get.fprice.n(rets = Sdata$rets, 
+               perc.right = x,
+               init.price = Sdata$price[1],
+               n = 10000)
+})
+Sys.time() - t 
+#&amp;gt; 9.861 seconds
+# IMPORTANT: Stop the cluster so it doesn&amp;#39;t messes around in the background
+sfStop()
+ 
+# have a look at the data
+str(result)
+#&amp;gt; List of 4
+#&amp;gt; $ : num [1:1463] 6048 6047 6046 6045 6043 ...
+#&amp;gt; $ : num [1:1463] 6048 6048 6048 6047 6047 ...
+#&amp;gt; $ : num [1:1463] 6048 6049 6049 6049 6050 ...
+#&amp;gt; $ : num [1:1463] 6048 6050 6050 6052 6053 ...
+ 
+# convert to a data.frame
+forecasted.prices &amp;lt;- data.frame(matrix(unlist(result), ncol = length(result)))
+head(forecasted.prices)
+#&amp;gt; X1       X2       X3       X4
+#&amp;gt; 1 6048.300 6048.300 6048.300 6048.300
+#&amp;gt; 2 6046.659 6047.672 6048.888 6050.085
+#&amp;gt; 3 6046.424 6047.589 6048.989 6050.323
+#&amp;gt; 4 6045.218 6047.276 6049.403 6051.897
+#&amp;gt; 5 6043.136 6046.546 6049.886 6053.465
+#&amp;gt; 6 6042.890 6046.399 6049.992 6053.763
+ 
+# and finally the last plot
+plot(x = Sdata$date, y = Sdata$price, type = &amp;quot;l&amp;quot;, 
+     main = &amp;quot;Snowfall Forecasts&amp;quot;, xlab = &amp;quot;Date&amp;quot;, ylab = &amp;quot;Price&amp;quot;,
+     ylim = c(0, max(forecasted.prices, Sdata$price)))
+for (i in 1:k){
+  lines(x = Sdata$date, y = forecasted.prices[, i], col = (i + 1))
+}
+legend(&amp;quot;topleft&amp;quot;, c(&amp;quot;Dax&amp;quot;, 
+                    paste0(&amp;quot;P = &amp;quot;, round(perc.right, 2), sep = &amp;quot;)), 
+       col = 1:(k + 1), lty = 1, cex = 0.75)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;snowfall_sim_forecasts.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The plot shows basically the same picture compared to the last picture.
+Everything else would be very strange.&lt;/p&gt;
+&lt;p&gt;Using parallel techniques, we can reduce the time for the computations from 21 seconds to 9 seconds.
+If we increase the number of cases (n = 100,000 instead of 10,000) then we should see that the parallel computation takes only a quarter of the time with 4 clusters.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;summary&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Summary&lt;/h1&gt;
+&lt;p&gt;A few lines of code shows us that even a small advantage (being able to forecast 5%p more correct Dax movements than a coin) can lead to monstrous returns of roughly 30% p.a. (CAGR of an initial investment of 6,050 and a value of 23,480 after 5.5 years).
+However, the take-away should be that if you find such a model, make sure that you backtest the hell out of it before telling anyone about it.
+Ex post, everyone is a billionaire.
+Another take-away and the purpose of this post is how to use Monte-Carlo and parallel computing techniques to create a simple and fast simulation to check something.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;outro&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Outro&lt;/h1&gt;
+&lt;p&gt;I am not an expert in parallel computing, so should you find an error in the explanation or in the code, please leave a comment and I will happily correct the error.
+Furthermore, if you have any questions, comments or ideas, please leave a comment or send me an email.&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

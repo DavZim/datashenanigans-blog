@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>/</loc>
+    <lastmod>2030-06-01T13:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/talk/</loc>
+    <lastmod>2030-06-01T13:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/talk/example/</loc>
+    <lastmod>2030-06-01T13:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/finance/</loc>
+    <lastmod>2020-01-01T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/package/</loc>
+    <lastmod>2020-01-01T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/project/</loc>
+    <lastmod>2020-01-01T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/project/ritch/</loc>
+    <lastmod>2020-01-01T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/</loc>
+    <lastmod>2020-01-01T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/abm/</loc>
+    <lastmod>2019-01-01T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/project/schellingr/</loc>
+    <lastmod>2019-01-01T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/project/varsextra/</loc>
+    <lastmod>2019-01-01T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/project/colortable/</loc>
+    <lastmod>2018-01-01T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/blog/</loc>
+    <lastmod>2017-11-30T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/categories/</loc>
+    <lastmod>2017-11-30T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/data/</loc>
+    <lastmod>2017-11-30T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/blog/2017-11-30-introducing-ritch/</loc>
+    <lastmod>2017-11-30T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/itch/</loc>
+    <lastmod>2017-11-30T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/r/</loc>
+    <lastmod>2017-11-30T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/category/r/</loc>
+    <lastmod>2017-11-30T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/project/optionvaluation/</loc>
+    <lastmod>2017-01-01T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/forecasting/</loc>
+    <lastmod>2016-10-24T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/out-of-sample-testing/</loc>
+    <lastmod>2016-10-24T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/simulation/</loc>
+    <lastmod>2016-10-24T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/testing/</loc>
+    <lastmod>2016-10-24T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/blog/2016-10-24-oos-testing/</loc>
+    <lastmod>2016-10-24T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/blog/2016-05-24-gentle-capm-i/</loc>
+    <lastmod>2016-05-24T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/capm/</loc>
+    <lastmod>2016-05-24T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/efficient-frontier/</loc>
+    <lastmod>2016-05-24T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/monte-carlo/</loc>
+    <lastmod>2016-01-15T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/parallel/</loc>
+    <lastmod>2016-01-15T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/snowfall/</loc>
+    <lastmod>2016-01-15T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/blog/2016-01-15-speeding-bayesian-t-test/</loc>
+    <lastmod>2016-01-15T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/quantmod/</loc>
+    <lastmod>2015-09-23T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/blog/2015-09-23-backtests-stock-returns/</loc>
+    <lastmod>2015-09-23T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/blog/2015-07-16-lamberts-w/</loc>
+    <lastmod>2015-07-16T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/math/</loc>
+    <lastmod>2015-07-16T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/database/</loc>
+    <lastmod>2015-05-18T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/blog/2015-05-18-getting-started-postgresql/</loc>
+    <lastmod>2015-05-18T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/postgres/</loc>
+    <lastmod>2015-05-18T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/rpostgresql/</loc>
+    <lastmod>2015-05-18T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/blog/2015-05-12-abm-with-rdatatable/</loc>
+    <lastmod>2015-05-12T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/agent-based-modelling/</loc>
+    <lastmod>2015-05-12T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/data.table/</loc>
+    <lastmod>2015-05-12T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/ggplot2/</loc>
+    <lastmod>2015-05-12T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/aviation/</loc>
+    <lastmod>2015-04-30T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/dplyr/</loc>
+    <lastmod>2015-04-30T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/rvest/</loc>
+    <lastmod>2015-04-30T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/blog/2015-04-30-rvest-aviation/</loc>
+    <lastmod>2015-04-30T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tag/web-scraping/</loc>
+    <lastmod>2015-04-30T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/authors/</loc>
+  </url>
+  
+  <url>
+    <loc>/authors/admin/</loc>
+  </url>
+  
+</urlset>

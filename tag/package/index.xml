@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Package | Data Shenanigans</title>
+    <link>/tag/package/</link>
+      <atom:link href="/tag/package/index.xml" rel="self" type="application/rss+xml" />
+    <description>Package</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Wed, 01 Jan 2020 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/images/logo.svg</url>
+      <title>Package</title>
+      <link>/tag/package/</link>
+    </image>
+    
+    <item>
+      <title>RITCH</title>
+      <link>/project/ritch/</link>
+      <pubDate>Wed, 01 Jan 2020 00:00:00 +0000</pubDate>
+      <guid>/project/ritch/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>SchellingR</title>
+      <link>/project/schellingr/</link>
+      <pubDate>Tue, 01 Jan 2019 00:00:00 +0000</pubDate>
+      <guid>/project/schellingr/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>varsExtra</title>
+      <link>/project/varsextra/</link>
+      <pubDate>Tue, 01 Jan 2019 00:00:00 +0000</pubDate>
+      <guid>/project/varsextra/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>colorTable</title>
+      <link>/project/colortable/</link>
+      <pubDate>Mon, 01 Jan 2018 00:00:00 +0000</pubDate>
+      <guid>/project/colortable/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Option Valuation</title>
+      <link>/project/optionvaluation/</link>
+      <pubDate>Sun, 01 Jan 2017 00:00:00 +0000</pubDate>
+      <guid>/project/optionvaluation/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

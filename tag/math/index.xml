@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>math | Data Shenanigans</title>
+    <link>/tag/math/</link>
+      <atom:link href="/tag/math/index.xml" rel="self" type="application/rss+xml" />
+    <description>math</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Thu, 16 Jul 2015 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/images/logo.svg</url>
+      <title>math</title>
+      <link>/tag/math/</link>
+    </image>
+    
+    <item>
+      <title>Getting that X with the Glog function and Lambert&#39;s W</title>
+      <link>/blog/2015-07-16-lamberts-w/</link>
+      <pubDate>Thu, 16 Jul 2015 00:00:00 +0000</pubDate>
+      <guid>/blog/2015-07-16-lamberts-w/</guid>
+      <description>
+
+
+&lt;p&gt;Facing a simple, yet frustrating formula like this&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[xe^{ax}=b\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;and the task to solve it for x left me googling around for hours until I found salvation in &lt;a href=&#34;http://www.wolframalpha.com/input/?i=x*exp%28a*x%29%3Db+solve+x&#34;&gt;Wolfram Alpha&lt;/a&gt;, &lt;a href=&#34;https://en.wikipedia.org/wiki/Lambert_W_function&#34;&gt;Wikipedia&lt;/a&gt;, and a nice &lt;a href=&#34;https://dahtah.wordpress.com/2011/11/16/lamberts-w-function-and-the-generalised-logarithm/&#34;&gt;blogpost&lt;/a&gt; with R-syntax to solve a similar equation.&lt;/p&gt;
+&lt;p&gt;Using the results from Wolfram Alpha I was able to find the solution with the &lt;code&gt;gsl&lt;/code&gt; library&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# install.packages(&amp;quot;gsl&amp;quot;)
+library(gsl)
+
+# create some example data
+dat &amp;lt;- data.frame(a = 0.109861, x = 10)
+# a is set so that b is roughly 30. 
+# Lazy as I am I used Excel and its solver ability to find numbers
+
+# to check if b is close to 30. Using the initial formula
+dat$b &amp;lt;- dat$x * exp(dat$a * dat$x)
+dat
+
+# solve for x2 and see if x and x2 are similar and close to 10
+dat$x2 &amp;lt;- lambert_W0(dat$a * dat$b)/dat$a
+dat
+#&amp;gt;  a        x  b2       x2
+#&amp;gt;1 0.109861 10 29.99993 10.00001&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Hurray!&lt;/p&gt;
+&lt;p&gt;Sometimes life can be so easy (after a long time searching for the right results….).&lt;/p&gt;
+&lt;div id=&#34;appendix-improvements&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Appendix: Improvements&lt;/h1&gt;
+&lt;p&gt;After revisiting this article some time later, I wondered what the speed is compared to Dan Kelley’s (see comment below) alternative. After firing up some repetitions using microbenchmark I got the following:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(gsl)
+library(rootSolve)
+library(microbenchmark)
+library(ggplot2)
+
+dat &amp;lt;- data.frame(a = 0.109861, x = 10)
+dat$b &amp;lt;- dat$x * exp(dat$a * dat$x)
+
+f &amp;lt;- function(x, a, b) x*exp(a*x) - b
+
+autoplot(microbenchmark(
+               lambertW = dat$x2 &amp;lt;- lambert_W0(dat$a * dat$b)/dat$a,
+               uniroot = dat$x3 &amp;lt;- uniroot.all(f, interval = c(0, 100),
+                                               a = dat$a, b = dat$b),
+               times = 10000))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;benchmark.png&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

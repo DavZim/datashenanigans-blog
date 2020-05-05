@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>RPostgreSQL | Data Shenanigans</title>
+    <link>/tag/rpostgresql/</link>
+      <atom:link href="/tag/rpostgresql/index.xml" rel="self" type="application/rss+xml" />
+    <description>RPostgreSQL</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Mon, 18 May 2015 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/images/logo.svg</url>
+      <title>RPostgreSQL</title>
+      <link>/tag/rpostgresql/</link>
+    </image>
+    
+    <item>
+      <title>Getting started with PostgreSQL in R</title>
+      <link>/blog/2015-05-18-getting-started-postgresql/</link>
+      <pubDate>Mon, 18 May 2015 00:00:00 +0000</pubDate>
+      <guid>/blog/2015-05-18-getting-started-postgresql/</guid>
+      <description>
+
+
+&lt;p&gt;When dealing with large datasets that potentially exceed the memory of your machine it is nice to have another possibility such as your own server with an SQL/PostgreSQL database on it, where you can query the data in smaller digestible chunks. For example, recently I was facing a financial dataset of 5 GB. Although 5 GB fit into my RAM the data uses a lot of resources. One solution is to use an SQL-based database, where I can query data in smaller chunks, leaving resources for the computation.&lt;/p&gt;
+&lt;p&gt;While MySQL is the more widely used, PostgreSQL has the advantage of being open source and free for all usages. However, we still need to get a server. One possible way to do it is to rent Amazon server, however, as I don’t have a budget for my projects and because I only need the data on my own machine I wanted to set up a server on my Windows 8.1 machine. This is how I did it.&lt;/p&gt;
+&lt;div id=&#34;installing-software-starting-the-server-and-setting-up-new-users&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Installing software, Starting the Server and Setting up new Users&lt;/h1&gt;
+&lt;p&gt;First, we need to install the necessary software. Besides R and RStudio we need to install PostgreSQL, that we find &lt;a href=&#34;http://www.postgresql.org/download/windows/&#34;&gt;PostgreSQL&lt;/a&gt;. When installing we are asked to provide a password, just remember it as we need it later. Say for this example we set the password to: &lt;code&gt;&amp;quot;DataScienceRocks&amp;quot;&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Now we can already access and use the database, for example we can start the interface (pgAdmin III) that was automatically installed with PostgreSQL. To connect to the database double click on the server in pgAdmin III and type in your password. The server seems to run after the installation as well. If this is not the case (i.e. you get the error “Server doesn’t listen” when trying to connect to the server with pgAdmin III), you can start the server with the following command in the command line:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;pg_ctl -D &amp;quot;C:\Program Files\PostgreSQL\9.4\data&amp;quot; start&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As we can see, we only have one user (“&lt;code&gt;postgres&lt;/code&gt;”). It is good practice to use the database with another user that has no createrole (think of it as a non-admin user).&lt;/p&gt;
+&lt;p&gt;To set up a new user I follow &lt;a href=&#34;https://doc.odoo.com/install/windows/postgres/&#34;&gt;PostgreSQL Server installation and configuration&lt;/a&gt; explanation. Start the command line (go to the start menu and type &lt;code&gt;cmd&amp;quot;&lt;/code&gt;) and move to the folder where you installed PostgreSQL (more precisely, the &lt;code&gt;bin&lt;/code&gt;-folder). In my case I navigated to the folder by typing:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;cd C:/Program Files/PostgreSQL/9.4/bin&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now we need to create a new user (&lt;code&gt;openpg&lt;/code&gt;), which we can do by executing the following command:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;createuser.exe --createdb --username postgres --no-createrole --pwprompt openpg&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We have to enter the password for the new user twice (note that there is no feedback from the commandline), for this example I set it to “&lt;code&gt;new_user_password&lt;/code&gt;”, lastly we are asked to give our password for the main user (“&lt;code&gt;postgres&lt;/code&gt;”) which is in this case “&lt;code&gt;DataScienceRocks&lt;/code&gt;”, as specified during the installation.&lt;/p&gt;
+&lt;p&gt;We can check if we have two users by going into pgAdmin III, which should look like this:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;./pgadmin_users.png&#34; /&gt;&lt;/p&gt;
+&lt;div id=&#34;creating-a-table-in-pgadmin-iii&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Creating a Table in pgAdmin III&lt;/h2&gt;
+&lt;p&gt;An easy way to create a table (database) is to use pgAdmin III. Right click on the “&lt;code&gt;Tables&lt;/code&gt;” and choose “New Table”.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;./pgadmin_tables.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;For this example we create a table called &lt;code&gt;cartable&lt;/code&gt; that we will later populate with the dataset of &lt;code&gt;mtcars&lt;/code&gt;. For the dataset we need to specify the columes and their types as shown in the next picture.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pgadmin_new_table1.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Lastly, we need to specificy a primary key in constraints. In this case I use the &lt;code&gt;carname&lt;/code&gt; column as key.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;connection-with-r&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Connection with R&lt;/h1&gt;
+&lt;p&gt;Now it is time to connect to the database with R. This approach uses the &lt;a href=&#34;http://cran.r-project.org/web/packages/RPostgreSQL/index.html&#34;&gt;RPostgreSQL&lt;/a&gt; and this &lt;a href=&#34;http://www.r-bloggers.com/r-and-postgresql-using-rpostgresql-and-sqldf/&#34;&gt;R and PostgreSQL – using RPostgreSQL and sqldf&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;To connect, we need to enter the following commands in R:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# install.packages(&amp;quot;RPostgreSQL&amp;quot;)
+require(&amp;quot;RPostgreSQL&amp;quot;)
+
+# create a connection
+# save the password that we can &amp;quot;hide&amp;quot; it as best as we can by collapsing it
+pw &amp;lt;- {
+  &amp;quot;correcthorsebatterystaple&amp;quot;
+}
+
+# loads the PostgreSQL driver
+drv &amp;lt;- dbDriver(&amp;quot;PostgreSQL&amp;quot;)
+# creates a connection to the postgres database
+# note that &amp;quot;con&amp;quot; will be used later in each connection to the database
+con &amp;lt;- dbConnect(drv, dbname = &amp;quot;postgres&amp;quot;,
+                 host = &amp;quot;localhost&amp;quot;, port = 5432,
+                 user = &amp;quot;openpg&amp;quot;, password = pw)
+rm(pw) # removes the password
+
+# check for the cartable
+dbExistsTable(con, &amp;quot;cartable&amp;quot;)
+# TRUE&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If we don’t get an error, that means we are connected to the database.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;write-and-load-data-with-rpostgresql&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Write and Load Data with RPostgreSQL&lt;/h1&gt;
+&lt;p&gt;The following code show how we can write and read data to the database:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# creates df, a data.frame with the necessary columns
+data(mtcars)
+df &amp;lt;- data.frame(carname = rownames(mtcars), 
+                 mtcars, 
+                 row.names = NULL)
+df$carname &amp;lt;- as.character(df$carname)
+rm(mtcars)
+
+# writes df to the PostgreSQL database &amp;quot;postgres&amp;quot;, table &amp;quot;cartable&amp;quot; 
+dbWriteTable(con, &amp;quot;cartable&amp;quot;, 
+             value = df, append = TRUE, row.names = FALSE)
+
+# query the data from postgreSQL 
+df_postgres &amp;lt;- dbGetQuery(con, &amp;quot;SELECT * from cartable&amp;quot;)
+
+# compares the two data.frames
+identical(df, df_postgres)
+# TRUE
+
+# Basic Graph of the Data
+require(ggplot2)
+ggplot(df_postgres, aes(x = as.factor(cyl), y = mpg, fill = as.factor(cyl))) + 
+  geom_boxplot() + theme_bw()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;ggplot2.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Lastly, if we are finished, we have to disconnect from the server:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# close the connection
+dbDisconnect(con)
+dbUnloadDriver(drv)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;outro&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Outro&lt;/h1&gt;
+&lt;p&gt;If you have any questions about the code, PostgreSQL or pgAdmin III or if you have remarks or have found a way to do it better/faster feel free to leave a comment or write me an email.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;useful-links&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Useful links:&lt;/h1&gt;
+&lt;p&gt;Get the PostgreSQL software here:
+&lt;a href=&#34;http://www.postgresql.org/download/windows/&#34; class=&#34;uri&#34;&gt;http://www.postgresql.org/download/windows/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;PostgreSQL commandline commands: &lt;a href=&#34;http://www.postgresql.org/docs/9.4/static/app-pg-ctl.html&#34; class=&#34;uri&#34;&gt;http://www.postgresql.org/docs/9.4/static/app-pg-ctl.html&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Create a new User: &lt;a href=&#34;https://doc.odoo.com/install/windows/postgres/&#34; class=&#34;uri&#34;&gt;https://doc.odoo.com/install/windows/postgres/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;For a short introduction to postgreSQL queries have a look at this: &lt;a href=&#34;http://www.postgresql.org/docs/8.4/static/tutorial-select.html&#34; class=&#34;uri&#34;&gt;http://www.postgresql.org/docs/8.4/static/tutorial-select.html&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;appendix&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Appendix&lt;/h1&gt;
+&lt;p&gt;If you want to create a table in R instead of pgAdmin III you can do that of course. The following creates the same table as the we did earlier in pgAdmin III:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# specifies the details of the table
+sql_command &amp;lt;- &amp;quot;CREATE TABLE cartable
+(
+  carname character varying NOT NULL,
+  mpg numeric(3,1),
+  cyl numeric(1,0),
+  disp numeric(4,1),  
+  hp numeric(3,0),
+  drat numeric(3,2),
+  wt numeric(4,3),
+  qsec numeric(4,2),
+  vs numeric(1,0),
+  am numeric(1,0),
+  gear numeric(1,0),
+  carb numeric(1,0),
+  CONSTRAINT cartable_pkey PRIMARY KEY (carname)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE cartable
+  OWNER TO openpg;
+COMMENT ON COLUMN cartable.disp IS &amp;#39;
+&amp;#39;;&amp;quot;
+# sends the command and creates the table
+dbGetQuery(con, sql_command)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;appendix-2-improvements&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Appendix 2: Improvements&lt;/h1&gt;
+&lt;p&gt;Almost a year after I wrote this blog post, I have made my own fair amount of experience with SQL and wanted to share some experience with you.&lt;/p&gt;
+&lt;p&gt;First: You may want to write a short function that connects you to the server and makes sure the connection closes again. What I usually use is something like this:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# 1) for quering from SQL
+SQLCommand &amp;lt;- function(query){
+  on.exit(dbDisconnect(con))
+  
+  con &amp;lt;- dbConnect(drv = dbDriver(&amp;quot;PostgreSQL&amp;quot;), 
+                 dbname = &amp;quot;postgres&amp;quot;, host = &amp;quot;localhost&amp;quot;, 
+                 port = 5432, user = &amp;quot;openpg&amp;quot;, 
+                 password = &amp;quot;correcthorsebatterystaple&amp;quot;)
+
+  tmp &amp;lt;- dbGetQuery(con, query)
+}
+
+# 2) for writing to SQL
+SQLWriteValues &amp;lt;- function(values, table){
+  on.exit(dbDisconnect(con))
+  
+  con &amp;lt;- dbConnect(drv = dbDriver(&amp;quot;PostgreSQL&amp;quot;), 
+                 dbname = &amp;quot;postgres&amp;quot;, host = &amp;quot;localhost&amp;quot;, 
+                 port = 5432, user = &amp;quot;openpg&amp;quot;, 
+                 password = &amp;quot;correcthorsebatterystaple&amp;quot;)
+
+  dbWriteTable(con, table, value = values, append = T, row.names = F)
+  return(NULL)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;I would then use it like this:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;SQLWriteValues(df, &amp;quot;cartable&amp;quot;)
+
+df2 &amp;lt;- SQLCommand(&amp;quot;SELECT * FROM cartable&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Lastly, if you want to exclude the details of your connection such as username, password, etc. from your source code, because you work with an open github repository or you want to be able to change your passwords easily, I do the following, which outsources the connection to a config.yml (make sure that you include this file in your .gitignore) file and loads the necessary information using this:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;config.yml&lt;/code&gt; (make sure that this file is in your working directory):&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;db:
+ host : &amp;quot;localhost&amp;quot;
+ dbname : &amp;quot;postgres&amp;quot;
+ user : &amp;quot;openpg&amp;quot;
+ port : 5432
+ password : &amp;quot;correcthorsebatterystaple&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;in your r-file:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(yaml)
+
+SQLCommand &amp;lt;- function(query){
+  on.exit(dbDisconnect(con))
+  
+  con &amp;lt;- do.call(dbConnect, 
+                 c(drv = dbDriver(&amp;quot;PostgreSQL&amp;quot;), 
+                   yaml.load_file(&amp;quot;config.yml&amp;quot;)$db))
+  tmp &amp;lt;- dbGetQuery(con, query)
+  return(tmp)
+}
+
+SQLWriteValues &amp;lt;- function(values, table){
+  on.exit(dbDisconnect(con))
+  
+  con &amp;lt;- do.call(dbConnect, 
+                 c(drv = dbDriver(&amp;quot;PostgreSQL&amp;quot;), 
+                   yaml.load_file(&amp;quot;config.yml&amp;quot;)$db))
+  
+  dbWriteTable(con, table, value = values, append = T, row.names = F)
+  return(NULL)
+}
+
+# same as before
+SQLWriteValues(df, &amp;quot;cartable&amp;quot;)
+
+df2 &amp;lt;- SQLCommand(&amp;quot;SELECT * FROM cartable&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

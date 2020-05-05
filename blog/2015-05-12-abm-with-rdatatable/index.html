@@ -1,0 +1,1289 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.8.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="David Zimmermann, PhD">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Warning After revisiting this blog 5 years later, I was not able to reproduce the code fully, see the addendum for a post-mortem.
+ Introduction Recently I found a good introduction to the Schelling-Segregation Model and to Agent Based Modelling (ABM) for Python (Binpress Article by Adil).">
+
+  
+  <link rel="alternate" hreflang="en-us" href="/blog/2015-05-12-abm-with-rdatatable/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="#2962ff">
+  
+
+  
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.0-1/css/all.min.css" integrity="sha256-4w9DunooKSr3MFXHXWyFER38WmPdm361bQS/2KUWZbU=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin="anonymous" title="hl-light">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+        
+      
+    
+
+    
+
+    
+
+    
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.1.2/lazysizes.min.js" integrity="sha256-Md1qLToewPeKjfAHU1zyPwOutccPAm5tahnaw7Osw0A=" crossorigin="anonymous" async></script>
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+        
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700%7CRoboto:400,400italic,700%7CRoboto+Mono&display=swap">
+  
+
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.css">
+
+  
+
+
+
+
+  
+
+
+  
+  
+
+  
+
+  <link rel="manifest" href="/index.webmanifest">
+  <link rel="icon" type="image/png" href="/images/icon_hu4458f371187753ae19db47310131318b_36217_32x32_fill_lanczos_center_2.png">
+  <link rel="apple-touch-icon" type="image/png" href="/images/icon_hu4458f371187753ae19db47310131318b_36217_192x192_fill_lanczos_center_2.png">
+
+  <link rel="canonical" href="/blog/2015-05-12-abm-with-rdatatable/">
+
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary">
+  
+  <meta property="og:site_name" content="Data Shenanigans">
+  <meta property="og:url" content="/blog/2015-05-12-abm-with-rdatatable/">
+  <meta property="og:title" content="Agent Based Modelling with data.table OR how to model urban migration with R | Data Shenanigans">
+  <meta property="og:description" content="Warning After revisiting this blog 5 years later, I was not able to reproduce the code fully, see the addendum for a post-mortem.
+ Introduction Recently I found a good introduction to the Schelling-Segregation Model and to Agent Based Modelling (ABM) for Python (Binpress Article by Adil)."><meta property="og:image" content="/images/logo.svg">
+  <meta property="twitter:image" content="/images/logo.svg"><meta property="og:locale" content="en-us">
+  
+    
+      <meta property="article:published_time" content="2015-05-12T00:00:00&#43;00:00">
+    
+    <meta property="article:modified_time" content="2015-05-12T00:00:00&#43;00:00">
+  
+
+  
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>Agent Based Modelling with data.table OR how to model urban migration with R | Data Shenanigans</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+    <img src="/images/logo.svg" height="70" width="70">
+      
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Data Shenanigans</a>
+    </div>
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Data Shenanigans</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#blog"><span>Blog</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#talks"><span>Talks</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Projects</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>About</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+      
+      <li class="nav-item">
+        <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+      </li>
+      
+
+      
+
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>Agent Based Modelling with data.table OR how to model urban migration with R</h1>
+
+  
+
+  
+    
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    2015-05-12
+  </span>
+  
+
+  
+
+  
+
+  
+  
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/category/r/">R</a></span>
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      
+
+
+<div id="warning" class="section level2">
+<h2>Warning</h2>
+<p>After revisiting this blog 5 years later, I was not able to reproduce the code fully, see the addendum for a post-mortem.</p>
+</div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Recently I found a good introduction to the Schelling-Segregation Model and to Agent Based Modelling (ABM) for Python (<a href="https://www.binpress.com/tutorial/introduction-to-agentbased-models-an-implementation-of-schelling-model-in-python/144" title="Introduction to Agent Based Modeling in Python">Binpress Article by Adil</a>). The model follows an ABM approach to simulate how urban segregation can be explained. I will concentrate on the R-code, if you want to know more about the Schelling-Segregation Model (which brought its creator a Nobel Price) and Agent Based Modelling you should head over to the binpress page! As my Python knowledge is not sufficiently large enough, I try to rebuild the ABM in R with some guidelines from the Python script, but as I use <code>data.table</code> and its specific functions, the code naturally deviates quite a lot.</p>
+</div>
+<div id="schelling-segregation-model" class="section level2">
+<h2>Schelling-Segregation Model</h2>
+<p>The idea behind the Schelling Model is that we create an <code>M x N</code> grid that contains homes for our agents, which we simulate to belong to <code>n</code> different races, with a certain possibility that homes are empty. In each round I calculate a ratio of same-race neighbors over the total amount neighbors for each home (position on the grid). If the ratio falls below a certain threshold (in this case 50%), the agent becomes unhappy and will move to another (random) home. This process is iterated to find an equilibrium.</p>
+</div>
+<div id="basic-principles-of-the-code" class="section level2">
+<h2>Basic Principles of the Code</h2>
+<p>The ABM is based on three self-written functions:</p>
+<ol style="list-style-type: decimal">
+<li><code>initiateSchelling()</code></li>
+</ol>
+<ul>
+<li>takes inputs of dimensions of the simulated area and the number of different races</li>
+<li>creates a data.table called <em>schelling</em> that contains the <em>id</em> for each position in the grid, <em>x</em> and <em>y</em> the coordinates, the <em>race</em> as well as <em>distance</em> and <em>unsatisfied</em>, which we will use later</li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li><code>plotSchelling()</code></li>
+</ol>
+<ul>
+<li>takes a text input that is used as the graph’s title</li>
+<li>it uses the <code>schelling</code> data.table and plots each agent</li>
+</ul>
+<ol start="3" style="list-style-type: decimal">
+<li><code>iterate()</code></li>
+</ol>
+<ul>
+<li>takes the number of iterations (= number of simulations) as well as the similarity threshold</li>
+<li>the function has another subfunction <code>is.unsatisfied()</code> that checks for each row if the agent is unsatisfied</li>
+<li>iterate first checks for each agent if she is unsatisfied, if so the agent will be moved</li>
+</ul>
+</div>
+<div id="r-code-of-the-functions" class="section level2">
+<h2>R-Code of the Functions</h2>
+<p>To fasten up the speed of the code, I use the <code>data.table</code> package including some of its specialties. If you are unfamiliar with the syntax of <code>data.table</code>, I recommend you to have a look at this excellent intro by <a href="http://blog.yhathq.com/posts/fast-summary-statistics-with-data-dot-table.html" title="Fast Summary Statistics with Data Dot Table">yhat</a> or the <a href="https://s3.amazonaws.com/assets.datacamp.com/img/blog/data+table+cheat+sheet.pdf" title="CheatSheet Data.Table">CheatSheet by DataCamp.</a> For visualization, I use <code>ggplot2</code> and <code>RColorBrewer</code>. The packages are loaded with:</p>
+<pre class="r"><code>library(data.table)
+library(ggplot2)</code></pre>
+<p>The code for the <code>initiateSchelling()</code>-function looks like this:</p>
+<pre class="r"><code>initiateSchelling &lt;- function(dimensions = c(10, 10), n_races = 2){
+  # create &quot;races&quot; based on colours
+  races &lt;- colours()[1:n_races]
+  # what percentage of the homes will be empty
+  perc_empty &lt;- 0.2
+  
+  # how many homes will be simulated
+  n_homes = prod(dimensions)
+  # calculates the number of agents
+  count_agents &lt;- floor(n_homes * (1 - perc_empty))
+  
+  # the characteristics that a home can have
+  races &lt;- c(&quot;empty&quot;, races)
+  # the probabilities of each characteristics
+  probabilities &lt;- c(perc_empty, rep((1 - perc_empty)/(length(races) - 1),
+                                     times = length(races) - 1))
+  
+  # creates the global schelling data.table
+  schelling &lt;&lt;- data.table(id = 1:prod(dimensions),
+                           x = rep(1:dimensions[1],
+                                   dimensions[2]),
+                           y = rep(1:dimensions[2],
+                                   each = dimensions[1]),
+                           race = sample(x = races,
+                                         size = n_homes,
+                                         prob = probabilities,
+                                         replace = TRUE),
+                           # used to find the satisfaction of each home
+                           distance = rep(NA, prod(dimensions)),
+                           unsatisfied = rep(NA, prod(dimensions)))
+}</code></pre>
+<p>Secondly, the <code>plotSchelling()</code>-function looks like this:</p>
+<pre class="r"><code>plotSchelling &lt;- function(title = &quot;Schelling-Segregation-Model&quot;){
+  # get races to get the right number of colors
+  races &lt;- unique(schelling$race)
+  
+  # find the dimensions of the grid to get the best dot size
+  dims &lt;- c(max(schelling$x), max(schelling$y))
+  
+  # plot the graph
+  p &lt;- ggplot(data = schelling[race != &quot;empty&quot;],
+              aes(x = x, y = y, color = race)) +
+    # workaround to get relatively large dots that
+    # resize with the size of the grid
+    geom_point(size = 100/sqrt(prod(dims))) +
+    scale_colour_brewer(&quot;Dark2&quot;) +
+    # create a beatiful and mostly empty chart
+    theme_bw() +
+    theme(axis.line = element_blank(),
+          axis.text.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          legend.position = &quot;none&quot;,
+          panel.background = element_blank(),
+          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          plot.background = element_blank(),
+          plot.title = element_text(lineheight=3,
+                                    face=&quot;bold&quot;,
+                                    color=&quot;black&quot;,
+                                    size=14)) +
+    # fixes the axis to avoid distortion in the picture
+    coord_fixed(ratio = 1) +
+    # lastly adds the title
+    ggtitle(title)
+  
+  return(p)
+}</code></pre>
+<p>And lastly, the <code>iterate()</code>-function, that iterates over the checks for satisfaction and moves of the agents if necessary, looks like this:</p>
+<pre class="r"><code>iterate &lt;- function(n = 10, similiarity_threshold){
+  # subfunction that checks for a given x and y value if the agent is
+  # unsatisfied (returns TRUE or FALSE)
+  is.unsatisfied &lt;- function(x_value, y_value, similiarity_threshold = 0.5){
+    # gets the race for the agent
+    cur_race &lt;- schelling[x == x_value &amp; y == y_value, race]
+    
+    # checks if the home is empty to
+    if (cur_race == &quot;empty&quot;){
+      return(FALSE) # empty houses are not satisfied, therefore will not move!
+    } else {
+      # creates the square of the distance
+      # I avoid to take the squareroot to speed up the code
+      schelling[, distance := (x_value - x)^2 + (y_value - y)^2] 
+      
+      # counts the number of agents that live less than two fields away
+      # (includes all adjacent agents) and that are similar
+      count_similar &lt;- nrow(schelling[distance &lt;= 2 &amp;&amp;
+                                        race == cur_race &amp;&amp;
+                                        distance != 0])
+      # same here except that it looks into different agents
+      count_different &lt;- nrow(schelling[distance &lt;= 2 &amp;&amp;
+                                          race != cur_race &amp;&amp;
+                                          race != &quot;empty&quot;])
+      
+      # calculates the ratio
+      ratio &lt;- count_similar/(count_similar + count_different)
+      
+      # returns TRUE if the ratio is below the threshold
+      return(ratio &lt; similiarity_threshold)
+    }
+  }
+  
+  # creates a ProgressBar, although this is not necessary, it does look nice..
+  pb &lt;- txtProgressBar(min = 0, max = 1, style = 3)
+  # for time-keeping-purposes
+  t &lt;- Sys.time()
+  
+  # iterates
+  for (iterate in 1:n){
+    # fills the boolean vector &quot;unsatisfied&quot;
+    # indicates if the household is unsatisfied
+    schelling[, unsatisfied := is.unsatisfied(x_value = x,
+                                              y_value = y,
+                                              similiarity_threshold =
+                                                similiarity_threshold),
+              by = 1:nrow(schelling)]
+    
+    # move unsatisfied agents to an empty house
+    # find the IDs that are empty where agents can migrate to
+    emptyIDs &lt;- schelling[race == &quot;empty&quot;, id] # finds the id of empty houses
+    
+    # finds the origin of the agents moving,
+    # aka. the old ID of each household moving
+    oldIDs &lt;- schelling[(unsatisfied), id] # origin
+    
+    # generates new IDs for each household moving
+    # note that households can move to the house of other moving agents
+    # also, agents can (by a small chance) choose to &quot;move&quot; to their
+    # existing home
+    newIDs &lt;- sample(x = c(emptyIDs, oldIDs),
+                     size = length(oldIDs),
+                     replace = F) # target
+    
+    # a new data.table that shows
+    # what race migrates from which origin_id to which target-id
+    transition &lt;- data.table(origin = oldIDs,
+                             oldRace = schelling[id %in% oldIDs, race],
+                             target = newIDs)
+    
+    # moves the agents to the new homes
+    schelling[id %in% transition$origin]$race = &quot;empty&quot;
+    schelling[id %in% transition$target]$race = transition$oldRace
+    
+    # orders the schelling, although this takes some time,
+    # it is necessary for the other operations
+    schelling &lt;- schelling[order(id)]
+    
+    # updates the ProgressBar
+    setTxtProgressBar(pb, iterate/n)
+  }
+  close(pb)
+  timedif &lt;- Sys.time() - t
+  
+  # print out statistics for the calculation time
+  print(paste0(&quot;Time for calculation in seconds: &quot;, round(timedif, 3), &quot; or: &quot;,
+               round(n / as.numeric(timedif), 3), &quot; iterations per second&quot;))
+  
+  return(schelling)
+}</code></pre>
+</div>
+<div id="results-1-2-races" class="section level2">
+<h2>Results 1: 2 Races</h2>
+<p>By using the function I create a 50x50 grid with 2.500 agents and simulate 20 rounds (this process takes roughly a minute). A visualization is produced at 0, 10, and 20 iterations; after 20 rounds the 2-race simulation reaches an equilibrium as we can see by the few changes between the two states (10 and 20 iterations).</p>
+<pre class="r"><code>set.seed(42^2)
+# initiate schelling
+initiateSchelling(dimensions = c(50, 50), n_races = 2)
+# plot schelling
+plotSchelling(title = &quot;Schelling-Segregation-Model after 0 iterations&quot;)</code></pre>
+<p><img src="ssm_01.png" /></p>
+<pre class="r"><code># iterate 10 times
+schelling &lt;- iterate(n = 10, similiarity_threshold = 0.5)
+# plot the result after 10 iterations
+plotSchelling(title = &quot;Schelling-Segregation-Model after 10 iterations&quot;)</code></pre>
+<p><img src="ssm_101.png" /></p>
+<pre class="r"><code># iterate another 10 times
+schelling &lt;- iterate(n = 10, similiarity_threshold = 0.5)
+# plot again after 20 iterations total
+plotSchelling(title = &quot;Schelling-Segregation-Model after 20 iterations&quot;)</code></pre>
+<p>Although it seems that the model found an equilibrium after 10 iterations, there are still some minor changes between the two states, albeit only few.</p>
+</div>
+<div id="results-2-4-races" class="section level2">
+<h2>Results 2: 4 Races</h2>
+<p>To see the ABM with 4 different races I used the following code to generate the following images.</p>
+<pre class="r"><code>set.seed(42^3)
+# initiate schelling
+initiateSchelling(dimensions = c(50, 50), n_races = 4)
+# plot schelling
+plotSchelling(title = &quot;Schelling-Segregation-Model after 0 iterations&quot;)</code></pre>
+<p><img src="ssm4_01.png" /></p>
+<pre class="r"><code># iterate 10 times
+schelling &lt;- iterate(n = 10, similiarity_threshold = 0.5)
+# plot the result after 10 iterations
+plotSchelling(title = &quot;Schelling-Segregation-Model after 10 iterations&quot;)</code></pre>
+<p><img src="ssm4_101.png" /></p>
+<p>A more notable change happens between the states after 10 and 20 iterations.</p>
+<pre class="r"><code># iterate another 10 times
+schelling &lt;- iterate(n = 10, similiarity_threshold = 0.5)
+# plot again after 20 iterations total
+plotSchelling(title = &quot;Schelling-Segregation-Model after 20 iterations&quot;)</code></pre>
+<p><img src="ssm4_201.png" /></p>
+<pre class="r"><code># iterate another 30 times
+schelling &lt;- iterate(n = 30, similiarity_threshold = 0.5)
+# plot again after 50 iterations total
+plotSchelling(title = &quot;Schelling-Segregation-Model after 50 iterations&quot;)</code></pre>
+<p><img src="ssm4_501.png" /></p>
+<p>Here we see that the model took more iterations to find an almost steady-state after 50 iterations (there are still some agents that will move in the next round, can you spot them?).</p>
+</div>
+<div id="outro" class="section level2">
+<h2>Outro</h2>
+<p>These few lines show nicely what ABMs are, how they can be used and how they simplify complex human behavior. Although <code>data.table</code> is enormously fast, the process still takes a lot of time to calculate. If you have any idea how to speed up the code, I would love to hear about it in the comments! If you have any other questions or remarks, I am of course happy to hear about them in the comments as well. Lastly, if you want to see other implementations of the Schelling-Segregation Model in R, you can visit <a href="http://rsnippets.blogspot.co.uk/2012/04/animating-schellings-segregation-model.html" title="Animating Schelling Segregation Model">R Snippets</a> or <a href="http://www.r-bloggers.com/schellings-neighborhood-model/" title="Schellings Neighborhood Model">R-bloggers</a>.</p>
+</div>
+<div id="addendum-from-2020" class="section level2">
+<h2>Addendum from 2020</h2>
+<p>As noted in the blogpost, this code is horribly slow and does not produce the plots I advertised originally.
+This is, of course, not <code>data.table</code>’s or <code>R</code>’s fault, but past me’s.
+Revisiting the code leads to some cringe moments for me as lots of pieces can be made more clearly and more efficient.
+I guess I have learned a lot in the last 5 years.</p>
+<p>Here are a few things I would do differently as of 2020</p>
+<ul>
+<li>not use global variables (i.e., not use <code>&lt;&lt;-</code>), instead each function should take the data as its first argument</li>
+<li>especially ABMs lend themselves to object-oriented programming as each state (of agents) depends on other states. Therefore <code>R6</code> might be worth investigating.</li>
+<li>use a different code style: <code>initiate_schelling()</code> (snake_case) instead of <code>initiateSchelling()</code> (camelCase)</li>
+</ul>
+<p>But most importantly:</p>
+<p>As this is a good exercise for more efficient programming.
+For example, each round filters the data table over, creating unnecessary computation time.
+Therefore, I ported the code to <code>Rcpp</code> and created a package some time ago.
+Introducing the <a href="https://github.com/DavZim/SchellingR"><code>SchellingR</code></a> package.</p>
+<p>Which has some nice features, e.g., emojis and/or animations as well as very fast execution thanks to <code>Rcpp</code></p>
+<pre class="r"><code>library(SchellingR)
+set.seed(1234567)
+# run the schelling model on a 10x10 grid
+sh &lt;- run_schelling(size = 10, percent_empty = 0.2, 
+                    threshold = 0.5, number_of_groups = 2,
+                    max_rounds = 100)
+
+plot_grid(sh, select_round = 8, title = TRUE, emoji = TRUE)</code></pre>
+<p><img src="/blog/2015-05-12-abm-with-rdatatable_files/figure-html/unnamed-chunk-13-1.png" width="672" />
+or even better</p>
+<pre class="r"><code>plot_grid(sh, select_round = 8, title = TRUE, emoji = TRUE, animate = TRUE)</code></pre>
+<p><img src="/blog/2015-05-12-abm-with-rdatatable_files/figure-html/unnamed-chunk-14-1.gif" /><!-- --></p>
+</div>
+
+    </div>
+
+    
+
+
+
+
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="/tag/r/">R</a>
+  
+  <a class="badge badge-light" href="/tag/agent-based-modelling/">agent-based modelling</a>
+  
+  <a class="badge badge-light" href="/tag/data.table/">data.table</a>
+  
+  <a class="badge badge-light" href="/tag/ggplot2/">ggplot2</a>
+  
+</div>
+
+
+
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=/blog/2015-05-12-abm-with-rdatatable/&amp;text=Agent%20Based%20Modelling%20with%20data.table%20OR%20how%20to%20model%20urban%20migration%20with%20R" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/blog/2015-05-12-abm-with-rdatatable/&amp;t=Agent%20Based%20Modelling%20with%20data.table%20OR%20how%20to%20model%20urban%20migration%20with%20R" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Agent%20Based%20Modelling%20with%20data.table%20OR%20how%20to%20model%20urban%20migration%20with%20R&amp;body=/blog/2015-05-12-abm-with-rdatatable/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=/blog/2015-05-12-abm-with-rdatatable/&amp;title=Agent%20Based%20Modelling%20with%20data.table%20OR%20how%20to%20model%20urban%20migration%20with%20R" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Agent%20Based%20Modelling%20with%20data.table%20OR%20how%20to%20model%20urban%20migration%20with%20R%20/blog/2015-05-12-abm-with-rdatatable/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=/blog/2015-05-12-abm-with-rdatatable/&amp;title=Agent%20Based%20Modelling%20with%20data.table%20OR%20how%20to%20model%20urban%20migration%20with%20R" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+  
+    
+    
+    
+      
+    
+    
+    
+    <div class="media author-card content-widget-hr">
+      
+        
+        <img class="avatar mr-3 avatar-circle" src="/authors/admin/avatar_hud9c4e36c3980792791c57ad7608ee54f_170016_270x270_fill_lanczos_center_2.png" alt="David Zimmermann, PhD">
+      
+
+      <div class="media-body">
+        <h5 class="card-title"><a href="/">David Zimmermann, PhD</a></h5>
+        <h6 class="card-subtitle">Data Scientist</h6>
+        <p class="card-text">I am an economist by training, turned programmer/data scientist who loves to program with <code>R</code>, <code>Python</code>, and <code>C++</code>.</p>
+        <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/davzim" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/dav_zim" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://stackoverflow.com/users/3048453/david" target="_blank" rel="noopener">
+        <i class="fab fa-stack-overflow"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.kaggle.com/davzim" target="_blank" rel="noopener">
+        <i class="fab fa-kaggle"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.linkedin.com/in/david-zimmermann-76a737a4/" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+</ul>
+
+      </div>
+    </div>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <div class="article-widget content-widget-hr">
+    <h3>Related</h3>
+    <ul>
+      
+      <li><a href="/blog/2015-04-30-rvest-aviation/">Using rvest and dplyr to scrape data and look at aviation incidents</a></li>
+      
+    </ul>
+  </div>
+  
+
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js" integrity="sha256-eOgo0OtLL4cdq7RdwRUiGKLX9XsIJ7nGhWEKbohmVAQ=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/languages/cpp.min.js"></script>
+        
+      
+
+    
+
+    
+    
+
+    
+    
+    <script>const code_highlighting = true;</script>
+    
+
+    
+    
+    <script>const isSiteThemeDark = false;</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"No results found","placeholder":"Search...","results":"results found"};
+      const content_type = {
+        'post': "Posts",
+        'project': "Projects",
+        'publication' : "Publications",
+        'talk' : "Talks"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.37431be2d92d7fb0160054761ab79602.js"></script>
+
+    
+
+
+
+
+
+
+  
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    2020 &middot; 
+
+    David Zimmermann - Made with <a href="https://github.com/DavZim/davzim.github.io" target="_blank" rel="noopener"><i class="fab fa-github"></i></a>, the <a href="https://cran.r-project.org/" target="_blank" rel="noopener"><i class="fab fa-r-project"></i> </a><a href="https://github.com/rstudio/blogdown" target="_blank" rel="noopener">blogdown</a> package, and the 
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

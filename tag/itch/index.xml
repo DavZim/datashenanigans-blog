@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>ITCH | Data Shenanigans</title>
+    <link>/tag/itch/</link>
+      <atom:link href="/tag/itch/index.xml" rel="self" type="application/rss+xml" />
+    <description>ITCH</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Thu, 30 Nov 2017 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/images/logo.svg</url>
+      <title>ITCH</title>
+      <link>/tag/itch/</link>
+    </image>
+    
+    <item>
+      <title>Introducing RITCH: Parsing ITCH Files in R (Finance &amp; Market Microstructure)</title>
+      <link>/blog/2017-11-30-introducing-ritch/</link>
+      <pubDate>Thu, 30 Nov 2017 00:00:00 +0000</pubDate>
+      <guid>/blog/2017-11-30-introducing-ritch/</guid>
+      <description>
+
+
+&lt;p&gt;Recently I was faced with a file compressed in NASDAQ’s ITCH-protocol, as I wasn’t able to find an R-package that parses and loads the file to R for me, I spent (probably) way to much time to write one, so here it is.
+But you might wonder, what exactly is ITCH and why should I care? Well, ITCH is the outbound protocol NASDAQ uses to communicate market data to its clients, that is, all information including market status, orders, trades, circuit breakers, etc.
+with nanosecond timestamps for each day and each exchange.
+Kinda a must-have if you are looking into market microstructure, a good-to-have-looked-into-it if you are interested in general finance and/or if you are interested in data analytics and large structured datasets.
+If you are wondering where you might get some of these fancy datasets in the first place, I have good news for you.
+NASDAQ provides some sample datasets (6 days for 3 exchanges (NASDAQ, PSX, and BX), together about 25GBs gzipped) on its FTP server: &lt;a href=&#34;ftp://emi.nasdaq.com/ITCH/&#34;&gt;ftp://emi.nasdaq.com/ITCH/&lt;/a&gt;&lt;/p&gt;
+&lt;div id=&#34;the-ritch-package&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;The RITCH Package&lt;/h2&gt;
+&lt;p&gt;Now that I (hopefully) have your attention, let me represent to you &lt;code&gt;RITCH&lt;/code&gt; an R package that parses ITCH-files (version 5.0).
+Currently the package only lives on GitHub (&lt;a href=&#34;https://github.com/DavZim/RITCH&#34;&gt;https://github.com/DavZim/RITCH&lt;/a&gt;), but it should find its way into CRAN eventually.
+Until then, you have to use &lt;code&gt;devtools&lt;/code&gt; or &lt;code&gt;remotes&lt;/code&gt; to install it&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# install.packages(&amp;quot;remotes&amp;quot;)
+remotes::install_github(&amp;quot;DavZim/RITCH&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And you should be good to go (if not, please let me know!).
+RITCH so far has a very limited scope: extracting the messages from the ITCH-file plus some functions to count messages.
+The package leverages &lt;code&gt;C++&lt;/code&gt; and the excellent &lt;code&gt;Rcpp&lt;/code&gt; library to optimise parsing.
+RITCH itself does not contain any data as the datasets are too large for any repos and I have no copyright on the datasets in any way.
+For the following code I will use the &lt;code&gt;20170130.BX_ITCH_50&lt;/code&gt;-file from NASDAQ’s FTP-server, as its not too large at 714MB gzipped (1.6GB gunzipped), but still has almost 55 million messages.&lt;/p&gt;
+&lt;p&gt;All functions can take the gzipped or unzipped files, but if you use the file more than once and hard-drive space is not of utmost concern, I suggest you gunzip the file by hand (i.e., use &lt;code&gt;R.utils::gunzip(file, new_file, remove = FALSE)&lt;/code&gt; in R or &lt;code&gt;gunzip -k YYYYMMDD.XXX_ITCH_50.gz&lt;/code&gt; in the terminal) and call the functions on the “plain”-file.
+I will address some concerns to size and speed later on.&lt;/p&gt;
+&lt;p&gt;To download and prepare the data in R, we can use the following code&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;file &amp;lt;- &amp;quot;20170130.BX_ITCH_50.gz&amp;quot;
+# might take some time as it downloads 714MB
+if (!file.exists(file)) 
+  download.file(&amp;quot;ftp://emi.nasdaq.com/ITCH/20170130.BX_ITCH_50.gz&amp;quot;, 
+                file, mode = &amp;quot;wb&amp;quot;)
+
+# gunzip the file, but keep the original file
+R.utils::gunzip(&amp;quot;20170130.BX_ITCH_50.gz&amp;quot;, &amp;quot;20170130.BX_ITCH_50&amp;quot;, remove = FALSE)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;First, we want to get a general overview of the file, which we can do with &lt;code&gt;count_messages()&lt;/code&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(RITCH)
+file &amp;lt;- &amp;quot;20170130.BX_ITCH_50&amp;quot;
+
+msg_count &amp;lt;- count_messages(file, add_meta_data = TRUE) 
+#&amp;gt; [Counting]   54473386 messages found
+#&amp;gt; [Converting] to data.table
+
+msg_count
+#&amp;gt;     msg_type    count                                  msg_name                                    msg_group  doc_nr
+#&amp;gt;  1:        S        6                      System Event Message                         System Event Message     4.1
+#&amp;gt;  2:        R     8371                           Stock Directory                       Stock Related Messages   4.2.1
+#&amp;gt;  3:        H     8401                      Stock Trading Action                       Stock Related Messages   4.2.2
+#&amp;gt;  4:        Y     8502                       Reg SHO Restriction                       Stock Related Messages   4.2.3
+#&amp;gt;  5:        L     6011               Market Participant Position                       Stock Related Messages   4.2.4
+#&amp;gt;  6:        V        2                MWCB Decline Level Message                       Stock Related Messages 4.2.5.1
+#&amp;gt;  7:        W        0                       MWCB Status Message                       Stock Related Messages 4.2.5.2
+#&amp;gt;  8:        K        0                 IPO Quoting Period Update                       Stock Related Messages   4.2.6
+#&amp;gt;  9:        J        0                       LULD Auction Collar                       Stock Related Messages   4.2.7
+#&amp;gt; 10:        A 21142017                         Add Order Message                            Add Order Message   4.3.1
+#&amp;gt; 11:        F    20648      Add Order - MPID Attribution Message                            Add Order Message   4.3.2
+#&amp;gt; 12:        E  1203625                    Order Executed Message                        Modify Order Messages   4.4.1
+#&amp;gt; 13:        C     8467 Order Executed Message With Price Message                        Modify Order Messages   4.4.2
+#&amp;gt; 14:        X  1498904                      Order Cancel Message                        Modify Order Messages   4.4.3
+#&amp;gt; 15:        D 20282644                      Order Delete Message                        Modify Order Messages   4.4.4
+#&amp;gt; 16:        U  3020278                     Order Replace Message                        Modify Order Messages   4.4.5
+#&amp;gt; 17:        P   330023                 Trade Message (Non-Cross)                               Trade Messages   4.5.1
+#&amp;gt; 18:        Q        0                       Cross Trade Message                               Trade Messages   4.5.2
+#&amp;gt; 19:        B        0                      Broken Trade Message                               Trade Messages   4.5.3
+#&amp;gt; 20:        I        0                              NOII Message Net Order Imbalance Indicator (NOII) Message     4.6
+#&amp;gt; 21:        N  6935487                   Retail Interest Message    Retail Price Improvement Indicator (RPII)     4.7
+#&amp;gt;     msg_type    count                                  msg_name                                    msg_group  doc_nr&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As you can see, there are a lot of different message types.&lt;/p&gt;
+&lt;p&gt;Currently this package parses only messages from the group “Add Order Messages” (type ‘A’ and ‘F’), “Modify Order Messages” (type ‘E’, ‘C’, ‘X’, ‘D’, and ‘U’), and “Trade Messages” (type ‘P’, ‘Q’, and ‘B’).
+You can extract the different message-types by using the functions &lt;code&gt;get_orders&lt;/code&gt;, &lt;code&gt;get_modifications&lt;/code&gt;, and &lt;code&gt;get_trades&lt;/code&gt;, respectively.
+The doc-number refers to the section in the &lt;a href=&#34;https://www.nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/NQTVITCHspecification.pdf&#34;&gt;official documentation&lt;/a&gt; (which also contains more detailed description what each type contains).
+If you are annoyed by the feedback the function gives you (&lt;code&gt;[Counting] ... [Converting]...&lt;/code&gt;), you can always turn the feedback off with the &lt;code&gt;quiet = TRUE&lt;/code&gt; option (this applies to all functions).
+Lets try to parse the first 10 orders&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;orders &amp;lt;- get_orders(file, 1, 10) 
+#&amp;gt; 10 messages found
+#&amp;gt; [Loading]    .
+#&amp;gt; [Converting] to data.table
+#&amp;gt; [Formatting]
+
+orders
+#&amp;gt;     msg_type locate_code tracking_number    timestamp order_ref   buy shares stock   price mpid       date            datetime
+#&amp;gt;  1:        A        7584               0 2.520001e+13     36132  TRUE 500000  UAMY  0.0001   NA 2017-01-30 2017-01-30 07:00:00
+#&amp;gt;  2:        A        3223               0 2.520001e+13     36133  TRUE 500000  GLOW  0.0001   NA 2017-01-30 2017-01-30 07:00:00
+#&amp;gt;  3:        A        2937               0 2.520001e+13     36136 FALSE    200   FRP 18.6500   NA 2017-01-30 2017-01-30 07:00:00
+#&amp;gt;  4:        A        5907               0 2.520001e+13     36137  TRUE   1500   PIP  3.1500   NA 2017-01-30 2017-01-30 07:00:00
+#&amp;gt;  5:        A        5907               0 2.520001e+13     36138 FALSE   2000   PIP  3.2500   NA 2017-01-30 2017-01-30 07:00:00
+#&amp;gt;  6:        A        5907               0 2.520001e+13     36139  TRUE   3000   PIP  3.1000   NA 2017-01-30 2017-01-30 07:00:00
+#&amp;gt;  7:        A        5398               0 2.520001e+13     36140  TRUE    200   NSR 33.0000   NA 2017-01-30 2017-01-30 07:00:00
+#&amp;gt;  8:        A        5907               0 2.520001e+13     36141 FALSE    500   PIP  3.2500   NA 2017-01-30 2017-01-30 07:00:00
+#&amp;gt;  9:        A        2061               0 2.520001e+13     36142 FALSE   1300  DSCI  7.0000   NA 2017-01-30 2017-01-30 07:00:00
+#&amp;gt; 10:        A        1582               0 2.520001e+13     36143  TRUE    500  CPPL 17.1500   NA 2017-01-30 2017-01-30 07:00:00&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The same works for trades using the &lt;code&gt;get_trades()&lt;/code&gt; function and for order modifications using the &lt;code&gt;get_modifications()&lt;/code&gt; function.
+To speed up the &lt;code&gt;get_*&lt;/code&gt; functions, we can use the message-count information from earlier.
+For example the following code yields the same results as above, but saves time.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;orders &amp;lt;- get_orders(file, 1, count_orders(msg_count)) 
+trades &amp;lt;- get_trades(file, 1, count_trades(msg_count)) &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If you want to get more information about each field, you can have a look at the &lt;a href=&#34;https://www.nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/NQTVITCHspecification.pdf&#34;&gt;official ITCH-protocol specification manual&lt;/a&gt; or you can get a small data.table about each message type by calling &lt;code&gt;get_meta_data()&lt;/code&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;having-a-look-at-some-the-most-traded-etfs&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Having a Look at some the most traded ETFs&lt;/h2&gt;
+&lt;p&gt;To have at least one piece of eye-candy in this post, lets have a quick go at the orders and trades of SPY (an S&amp;amp;P 500 ETF and one of the most traded assets, in case you didn’t know), IWO (Russel 2000 Growth ETF), IWM (Russel 2000 Index ETF), and VXX (S&amp;amp;P 500 VIX ETF) on the BX-exchange.
+In case you are wondering, I got these four tickers with&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(magrittr)
+
+get_orders(file, 1, count_orders(msg_count), quiet = T) %&amp;gt;% 
+  .$stock %&amp;gt;% 
+  table %&amp;gt;% 
+  sort(decreasing = T) %&amp;gt;% 
+  head(4)
+#&amp;gt; .
+#&amp;gt;    SPY    IWO    IWM    VXX 
+#&amp;gt; 135119 135016 118123 117395&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;First we load the data (orders and trades) from the file, then we do some data munging, and finally plot the data using ggplot2.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(ggplot2)
+
+# 0. load the data
+orders &amp;lt;- get_orders(file, 1, count_orders(msg_count))
+#&amp;gt; 21162665 messages found
+#&amp;gt; [Loading]    ................
+#&amp;gt; [Converting] to data.table
+#&amp;gt; [Formatting]
+
+trades &amp;lt;- get_trades(file, 1, count_trades(msg_count))
+#&amp;gt; 330023 messages found
+#&amp;gt; [Loading]    ................
+#&amp;gt; [Converting] to data.table
+#&amp;gt; [Formatting]
+
+# 1. data munging
+tickers &amp;lt;- c(&amp;quot;SPY&amp;quot;, &amp;quot;IWO&amp;quot;, &amp;quot;IWM&amp;quot;, &amp;quot;VXX&amp;quot;)
+dt_orders &amp;lt;- orders[stock %in% tickers]
+dt_trades &amp;lt;- trades[stock %in% tickers]
+
+# for each ticker, use only orders that are within 1% of the range of traded prices
+ranges &amp;lt;- dt_trades[, .(min_price = min(price), max_price = max(price)), by = stock]
+
+# filter the orders
+dt_orders &amp;lt;- dt_orders[ranges, on = &amp;quot;stock&amp;quot;][price &amp;gt;= 0.99 * min_price &amp;amp; price &amp;lt;= 1.01 * max_price]
+
+# replace the buy-factor with something more useful
+dt_orders[, buy := ifelse(buy, &amp;quot;Bid&amp;quot;, &amp;quot;Ask&amp;quot;)]
+dt_orders[, stock := factor(stock, levels = tickers)]
+
+# 2. data visualization
+ggplot() +
+  # add the orders to the plot
+  geom_point(data = dt_orders,
+             aes(x = datetime, y = price, color = buy), size = 0.5) +
+  # add the trades as a black line to the plot
+  geom_step(data = dt_trades,
+            aes(x = datetime, y = price)) +
+  # add a facet for each ETF
+  facet_wrap(~stock, scales = &amp;quot;free_y&amp;quot;) +
+  # some Aesthetics
+  theme_light() +
+  labs(title = &amp;quot;Orders and Trades of the largest ETFs&amp;quot;,
+       subtitle = &amp;quot;Date: 2017-01-30 | Exchange: BX&amp;quot;,
+       caption = &amp;quot;Source: NASDAQ&amp;quot;,
+       x = &amp;quot;Time&amp;quot;, y = &amp;quot;Price&amp;quot;,
+       color = &amp;quot;Side&amp;quot;) +
+  scale_y_continuous(labels = scales::dollar) +
+  scale_color_brewer(palette = &amp;quot;Set1&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;etf_plot.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Now its up to you to do something interesting with the data, I hope RITCH can help you with it.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;speed-ram-concerns&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Speed &amp;amp; RAM concerns&lt;/h2&gt;
+&lt;p&gt;If your machine struggles with some files, you can always load only parts of a file as shown above.
+And of course, make sure that you have only necessary datasets in your R-environment and that no unused programs are open (Chrome with some open tabs in the background happily eats your RAM).
+If your machine is able to handle larger datasets, you can increase the buffersize of each function call to 1GB or more using the &lt;code&gt;buffer_size = 1e9&lt;/code&gt; argument, increasing the speed with which a file is parsed.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;addendum&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Addendum&lt;/h2&gt;
+&lt;p&gt;If you find this package useful or have any other kind of feedback, I’d be happy if you let me know.
+Otherwise, if you need more functionality for additional message types, please feel free to create an issue or a pull request on &lt;a href=&#34;https://github.com/DavZim/RITCH&#34;&gt;GitHub&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

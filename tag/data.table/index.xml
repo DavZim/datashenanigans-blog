@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>data.table | Data Shenanigans</title>
+    <link>/tag/data.table/</link>
+      <atom:link href="/tag/data.table/index.xml" rel="self" type="application/rss+xml" />
+    <description>data.table</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Tue, 12 May 2015 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/images/logo.svg</url>
+      <title>data.table</title>
+      <link>/tag/data.table/</link>
+    </image>
+    
+    <item>
+      <title>Agent Based Modelling with data.table OR how to model urban migration with R</title>
+      <link>/blog/2015-05-12-abm-with-rdatatable/</link>
+      <pubDate>Tue, 12 May 2015 00:00:00 +0000</pubDate>
+      <guid>/blog/2015-05-12-abm-with-rdatatable/</guid>
+      <description>
+
+
+&lt;div id=&#34;warning&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Warning&lt;/h2&gt;
+&lt;p&gt;After revisiting this blog 5 years later, I was not able to reproduce the code fully, see the addendum for a post-mortem.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;introduction&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;Recently I found a good introduction to the Schelling-Segregation Model and to Agent Based Modelling (ABM) for Python (&lt;a href=&#34;https://www.binpress.com/tutorial/introduction-to-agentbased-models-an-implementation-of-schelling-model-in-python/144&#34; title=&#34;Introduction to Agent Based Modeling in Python&#34;&gt;Binpress Article by Adil&lt;/a&gt;). The model follows an ABM approach to simulate how urban segregation can be explained. I will concentrate on the R-code, if you want to know more about the Schelling-Segregation Model (which brought its creator a Nobel Price) and Agent Based Modelling you should head over to the binpress page! As my Python knowledge is not sufficiently large enough, I try to rebuild the ABM in R with some guidelines from the Python script, but as I use &lt;code&gt;data.table&lt;/code&gt; and its specific functions, the code naturally deviates quite a lot.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;schelling-segregation-model&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Schelling-Segregation Model&lt;/h2&gt;
+&lt;p&gt;The idea behind the Schelling Model is that we create an &lt;code&gt;M x N&lt;/code&gt; grid that contains homes for our agents, which we simulate to belong to &lt;code&gt;n&lt;/code&gt; different races, with a certain possibility that homes are empty. In each round I calculate a ratio of same-race neighbors over the total amount neighbors for each home (position on the grid). If the ratio falls below a certain threshold (in this case 50%), the agent becomes unhappy and will move to another (random) home. This process is iterated to find an equilibrium.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;basic-principles-of-the-code&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Basic Principles of the Code&lt;/h2&gt;
+&lt;p&gt;The ABM is based on three self-written functions:&lt;/p&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;&lt;code&gt;initiateSchelling()&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;takes inputs of dimensions of the simulated area and the number of different races&lt;/li&gt;
+&lt;li&gt;creates a data.table called &lt;em&gt;schelling&lt;/em&gt; that contains the &lt;em&gt;id&lt;/em&gt; for each position in the grid, &lt;em&gt;x&lt;/em&gt; and &lt;em&gt;y&lt;/em&gt; the coordinates, the &lt;em&gt;race&lt;/em&gt; as well as &lt;em&gt;distance&lt;/em&gt; and &lt;em&gt;unsatisfied&lt;/em&gt;, which we will use later&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol start=&#34;2&#34; style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;&lt;code&gt;plotSchelling()&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;takes a text input that is used as the graph’s title&lt;/li&gt;
+&lt;li&gt;it uses the &lt;code&gt;schelling&lt;/code&gt; data.table and plots each agent&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol start=&#34;3&#34; style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;&lt;code&gt;iterate()&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;takes the number of iterations (= number of simulations) as well as the similarity threshold&lt;/li&gt;
+&lt;li&gt;the function has another subfunction &lt;code&gt;is.unsatisfied()&lt;/code&gt; that checks for each row if the agent is unsatisfied&lt;/li&gt;
+&lt;li&gt;iterate first checks for each agent if she is unsatisfied, if so the agent will be moved&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div id=&#34;r-code-of-the-functions&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;R-Code of the Functions&lt;/h2&gt;
+&lt;p&gt;To fasten up the speed of the code, I use the &lt;code&gt;data.table&lt;/code&gt; package including some of its specialties. If you are unfamiliar with the syntax of &lt;code&gt;data.table&lt;/code&gt;, I recommend you to have a look at this excellent intro by &lt;a href=&#34;http://blog.yhathq.com/posts/fast-summary-statistics-with-data-dot-table.html&#34; title=&#34;Fast Summary Statistics with Data Dot Table&#34;&gt;yhat&lt;/a&gt; or the &lt;a href=&#34;https://s3.amazonaws.com/assets.datacamp.com/img/blog/data+table+cheat+sheet.pdf&#34; title=&#34;CheatSheet Data.Table&#34;&gt;CheatSheet by DataCamp.&lt;/a&gt; For visualization, I use &lt;code&gt;ggplot2&lt;/code&gt; and &lt;code&gt;RColorBrewer&lt;/code&gt;. The packages are loaded with:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(data.table)
+library(ggplot2)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The code for the &lt;code&gt;initiateSchelling()&lt;/code&gt;-function looks like this:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;initiateSchelling &amp;lt;- function(dimensions = c(10, 10), n_races = 2){
+  # create &amp;quot;races&amp;quot; based on colours
+  races &amp;lt;- colours()[1:n_races]
+  # what percentage of the homes will be empty
+  perc_empty &amp;lt;- 0.2
+  
+  # how many homes will be simulated
+  n_homes = prod(dimensions)
+  # calculates the number of agents
+  count_agents &amp;lt;- floor(n_homes * (1 - perc_empty))
+  
+  # the characteristics that a home can have
+  races &amp;lt;- c(&amp;quot;empty&amp;quot;, races)
+  # the probabilities of each characteristics
+  probabilities &amp;lt;- c(perc_empty, rep((1 - perc_empty)/(length(races) - 1),
+                                     times = length(races) - 1))
+  
+  # creates the global schelling data.table
+  schelling &amp;lt;&amp;lt;- data.table(id = 1:prod(dimensions),
+                           x = rep(1:dimensions[1],
+                                   dimensions[2]),
+                           y = rep(1:dimensions[2],
+                                   each = dimensions[1]),
+                           race = sample(x = races,
+                                         size = n_homes,
+                                         prob = probabilities,
+                                         replace = TRUE),
+                           # used to find the satisfaction of each home
+                           distance = rep(NA, prod(dimensions)),
+                           unsatisfied = rep(NA, prod(dimensions)))
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Secondly, the &lt;code&gt;plotSchelling()&lt;/code&gt;-function looks like this:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plotSchelling &amp;lt;- function(title = &amp;quot;Schelling-Segregation-Model&amp;quot;){
+  # get races to get the right number of colors
+  races &amp;lt;- unique(schelling$race)
+  
+  # find the dimensions of the grid to get the best dot size
+  dims &amp;lt;- c(max(schelling$x), max(schelling$y))
+  
+  # plot the graph
+  p &amp;lt;- ggplot(data = schelling[race != &amp;quot;empty&amp;quot;],
+              aes(x = x, y = y, color = race)) +
+    # workaround to get relatively large dots that
+    # resize with the size of the grid
+    geom_point(size = 100/sqrt(prod(dims))) +
+    scale_colour_brewer(&amp;quot;Dark2&amp;quot;) +
+    # create a beatiful and mostly empty chart
+    theme_bw() +
+    theme(axis.line = element_blank(),
+          axis.text.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          legend.position = &amp;quot;none&amp;quot;,
+          panel.background = element_blank(),
+          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          plot.background = element_blank(),
+          plot.title = element_text(lineheight=3,
+                                    face=&amp;quot;bold&amp;quot;,
+                                    color=&amp;quot;black&amp;quot;,
+                                    size=14)) +
+    # fixes the axis to avoid distortion in the picture
+    coord_fixed(ratio = 1) +
+    # lastly adds the title
+    ggtitle(title)
+  
+  return(p)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And lastly, the &lt;code&gt;iterate()&lt;/code&gt;-function, that iterates over the checks for satisfaction and moves of the agents if necessary, looks like this:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;iterate &amp;lt;- function(n = 10, similiarity_threshold){
+  # subfunction that checks for a given x and y value if the agent is
+  # unsatisfied (returns TRUE or FALSE)
+  is.unsatisfied &amp;lt;- function(x_value, y_value, similiarity_threshold = 0.5){
+    # gets the race for the agent
+    cur_race &amp;lt;- schelling[x == x_value &amp;amp; y == y_value, race]
+    
+    # checks if the home is empty to
+    if (cur_race == &amp;quot;empty&amp;quot;){
+      return(FALSE) # empty houses are not satisfied, therefore will not move!
+    } else {
+      # creates the square of the distance
+      # I avoid to take the squareroot to speed up the code
+      schelling[, distance := (x_value - x)^2 + (y_value - y)^2] 
+      
+      # counts the number of agents that live less than two fields away
+      # (includes all adjacent agents) and that are similar
+      count_similar &amp;lt;- nrow(schelling[distance &amp;lt;= 2 &amp;amp;&amp;amp;
+                                        race == cur_race &amp;amp;&amp;amp;
+                                        distance != 0])
+      # same here except that it looks into different agents
+      count_different &amp;lt;- nrow(schelling[distance &amp;lt;= 2 &amp;amp;&amp;amp;
+                                          race != cur_race &amp;amp;&amp;amp;
+                                          race != &amp;quot;empty&amp;quot;])
+      
+      # calculates the ratio
+      ratio &amp;lt;- count_similar/(count_similar + count_different)
+      
+      # returns TRUE if the ratio is below the threshold
+      return(ratio &amp;lt; similiarity_threshold)
+    }
+  }
+  
+  # creates a ProgressBar, although this is not necessary, it does look nice..
+  pb &amp;lt;- txtProgressBar(min = 0, max = 1, style = 3)
+  # for time-keeping-purposes
+  t &amp;lt;- Sys.time()
+  
+  # iterates
+  for (iterate in 1:n){
+    # fills the boolean vector &amp;quot;unsatisfied&amp;quot;
+    # indicates if the household is unsatisfied
+    schelling[, unsatisfied := is.unsatisfied(x_value = x,
+                                              y_value = y,
+                                              similiarity_threshold =
+                                                similiarity_threshold),
+              by = 1:nrow(schelling)]
+    
+    # move unsatisfied agents to an empty house
+    # find the IDs that are empty where agents can migrate to
+    emptyIDs &amp;lt;- schelling[race == &amp;quot;empty&amp;quot;, id] # finds the id of empty houses
+    
+    # finds the origin of the agents moving,
+    # aka. the old ID of each household moving
+    oldIDs &amp;lt;- schelling[(unsatisfied), id] # origin
+    
+    # generates new IDs for each household moving
+    # note that households can move to the house of other moving agents
+    # also, agents can (by a small chance) choose to &amp;quot;move&amp;quot; to their
+    # existing home
+    newIDs &amp;lt;- sample(x = c(emptyIDs, oldIDs),
+                     size = length(oldIDs),
+                     replace = F) # target
+    
+    # a new data.table that shows
+    # what race migrates from which origin_id to which target-id
+    transition &amp;lt;- data.table(origin = oldIDs,
+                             oldRace = schelling[id %in% oldIDs, race],
+                             target = newIDs)
+    
+    # moves the agents to the new homes
+    schelling[id %in% transition$origin]$race = &amp;quot;empty&amp;quot;
+    schelling[id %in% transition$target]$race = transition$oldRace
+    
+    # orders the schelling, although this takes some time,
+    # it is necessary for the other operations
+    schelling &amp;lt;- schelling[order(id)]
+    
+    # updates the ProgressBar
+    setTxtProgressBar(pb, iterate/n)
+  }
+  close(pb)
+  timedif &amp;lt;- Sys.time() - t
+  
+  # print out statistics for the calculation time
+  print(paste0(&amp;quot;Time for calculation in seconds: &amp;quot;, round(timedif, 3), &amp;quot; or: &amp;quot;,
+               round(n / as.numeric(timedif), 3), &amp;quot; iterations per second&amp;quot;))
+  
+  return(schelling)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;results-1-2-races&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Results 1: 2 Races&lt;/h2&gt;
+&lt;p&gt;By using the function I create a 50x50 grid with 2.500 agents and simulate 20 rounds (this process takes roughly a minute). A visualization is produced at 0, 10, and 20 iterations; after 20 rounds the 2-race simulation reaches an equilibrium as we can see by the few changes between the two states (10 and 20 iterations).&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;set.seed(42^2)
+# initiate schelling
+initiateSchelling(dimensions = c(50, 50), n_races = 2)
+# plot schelling
+plotSchelling(title = &amp;quot;Schelling-Segregation-Model after 0 iterations&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;ssm_01.png&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# iterate 10 times
+schelling &amp;lt;- iterate(n = 10, similiarity_threshold = 0.5)
+# plot the result after 10 iterations
+plotSchelling(title = &amp;quot;Schelling-Segregation-Model after 10 iterations&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;ssm_101.png&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# iterate another 10 times
+schelling &amp;lt;- iterate(n = 10, similiarity_threshold = 0.5)
+# plot again after 20 iterations total
+plotSchelling(title = &amp;quot;Schelling-Segregation-Model after 20 iterations&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Although it seems that the model found an equilibrium after 10 iterations, there are still some minor changes between the two states, albeit only few.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;results-2-4-races&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Results 2: 4 Races&lt;/h2&gt;
+&lt;p&gt;To see the ABM with 4 different races I used the following code to generate the following images.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;set.seed(42^3)
+# initiate schelling
+initiateSchelling(dimensions = c(50, 50), n_races = 4)
+# plot schelling
+plotSchelling(title = &amp;quot;Schelling-Segregation-Model after 0 iterations&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;ssm4_01.png&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# iterate 10 times
+schelling &amp;lt;- iterate(n = 10, similiarity_threshold = 0.5)
+# plot the result after 10 iterations
+plotSchelling(title = &amp;quot;Schelling-Segregation-Model after 10 iterations&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;ssm4_101.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;A more notable change happens between the states after 10 and 20 iterations.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# iterate another 10 times
+schelling &amp;lt;- iterate(n = 10, similiarity_threshold = 0.5)
+# plot again after 20 iterations total
+plotSchelling(title = &amp;quot;Schelling-Segregation-Model after 20 iterations&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;ssm4_201.png&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# iterate another 30 times
+schelling &amp;lt;- iterate(n = 30, similiarity_threshold = 0.5)
+# plot again after 50 iterations total
+plotSchelling(title = &amp;quot;Schelling-Segregation-Model after 50 iterations&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;ssm4_501.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Here we see that the model took more iterations to find an almost steady-state after 50 iterations (there are still some agents that will move in the next round, can you spot them?).&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;outro&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Outro&lt;/h2&gt;
+&lt;p&gt;These few lines show nicely what ABMs are, how they can be used and how they simplify complex human behavior. Although &lt;code&gt;data.table&lt;/code&gt; is enormously fast, the process still takes a lot of time to calculate. If you have any idea how to speed up the code, I would love to hear about it in the comments! If you have any other questions or remarks, I am of course happy to hear about them in the comments as well. Lastly, if you want to see other implementations of the Schelling-Segregation Model in R, you can visit &lt;a href=&#34;http://rsnippets.blogspot.co.uk/2012/04/animating-schellings-segregation-model.html&#34; title=&#34;Animating Schelling Segregation Model&#34;&gt;R Snippets&lt;/a&gt; or &lt;a href=&#34;http://www.r-bloggers.com/schellings-neighborhood-model/&#34; title=&#34;Schellings Neighborhood Model&#34;&gt;R-bloggers&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;addendum-from-2020&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Addendum from 2020&lt;/h2&gt;
+&lt;p&gt;As noted in the blogpost, this code is horribly slow and does not produce the plots I advertised originally.
+This is, of course, not &lt;code&gt;data.table&lt;/code&gt;’s or &lt;code&gt;R&lt;/code&gt;’s fault, but past me’s.
+Revisiting the code leads to some cringe moments for me as lots of pieces can be made more clearly and more efficient.
+I guess I have learned a lot in the last 5 years.&lt;/p&gt;
+&lt;p&gt;Here are a few things I would do differently as of 2020&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;not use global variables (i.e., not use &lt;code&gt;&amp;lt;&amp;lt;-&lt;/code&gt;), instead each function should take the data as its first argument&lt;/li&gt;
+&lt;li&gt;especially ABMs lend themselves to object-oriented programming as each state (of agents) depends on other states. Therefore &lt;code&gt;R6&lt;/code&gt; might be worth investigating.&lt;/li&gt;
+&lt;li&gt;use a different code style: &lt;code&gt;initiate_schelling()&lt;/code&gt; (snake_case) instead of &lt;code&gt;initiateSchelling()&lt;/code&gt; (camelCase)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;But most importantly:&lt;/p&gt;
+&lt;p&gt;As this is a good exercise for more efficient programming.
+For example, each round filters the data table over, creating unnecessary computation time.
+Therefore, I ported the code to &lt;code&gt;Rcpp&lt;/code&gt; and created a package some time ago.
+Introducing the &lt;a href=&#34;https://github.com/DavZim/SchellingR&#34;&gt;&lt;code&gt;SchellingR&lt;/code&gt;&lt;/a&gt; package.&lt;/p&gt;
+&lt;p&gt;Which has some nice features, e.g., emojis and/or animations as well as very fast execution thanks to &lt;code&gt;Rcpp&lt;/code&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(SchellingR)
+set.seed(1234567)
+# run the schelling model on a 10x10 grid
+sh &amp;lt;- run_schelling(size = 10, percent_empty = 0.2, 
+                    threshold = 0.5, number_of_groups = 2,
+                    max_rounds = 100)
+
+plot_grid(sh, select_round = 8, title = TRUE, emoji = TRUE)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/2015-05-12-abm-with-rdatatable_files/figure-html/unnamed-chunk-13-1.png&#34; width=&#34;672&#34; /&gt;
+or even better&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plot_grid(sh, select_round = 8, title = TRUE, emoji = TRUE, animate = TRUE)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/blog/2015-05-12-abm-with-rdatatable_files/figure-html/unnamed-chunk-14-1.gif&#34; /&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
