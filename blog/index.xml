@@ -5,7 +5,7 @@
     <link>https://davzim.github.io/blog/</link>
       <atom:link href="https://davzim.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
     <description>Blog</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2023</copyright><lastBuildDate>Thu, 30 Nov 2017 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2023</copyright><lastBuildDate>Thu, 13 Jul 2023 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://davzim.github.io/images/logo.svg</url>
       <title>Blog</title>
@@ -15,7 +15,7 @@
     <item>
       <title>Introducing dataverifyr: A Lightweight, Flexible, and Fast Data Validation Package that Can Handle All Sizes of Data </title>
       <link>https://davzim.github.io/blog/2023-07-13-dataverifyr/</link>
-      <pubDate>Thu, 30 Nov 2017 00:00:00 +0000</pubDate>
+      <pubDate>Thu, 13 Jul 2023 00:00:00 +0000</pubDate>
       <guid>https://davzim.github.io/blog/2023-07-13-dataverifyr/</guid>
       <description>
 
@@ -23,7 +23,7 @@
 &lt;p&gt;In every data project, there should be a check that the data actually looks like what you expect it to look like.
 This can be as simple as &lt;code&gt;stopifnot(all(data$values &amp;gt; 0))&lt;/code&gt;, but as with everything “simple”, you typically want to have some additional features, such as cleaner error messages, rules separated from your R script (eg in a yaml file), result visualization, and last but least, a library that does this as fast as possible.
 The last bit is especially important when you have the data in a database or as an &lt;code&gt;arrow&lt;/code&gt; &lt;code&gt;.parquet&lt;/code&gt; file, due to its size or complexity.&lt;/p&gt;
-&lt;p&gt;The newly released &lt;a href=&#34;https://davzim.github.io/dataverifyr/&#34;&gt;&lt;code&gt;dataverifyr&lt;/code&gt;&lt;/a&gt; package (on &lt;a href=&#34;https://cran.r-project.org/package=dataverifyr&#34;&gt;CRAN&lt;/a&gt;) allows you to do exactly that: write rules in a yaml file, load the rules, check if the rules where matched and filter for data points that do not conform to the rules; all while respecting your data framework: &lt;code&gt;data.table&lt;/code&gt;, &lt;code&gt;dplyr&lt;/code&gt;, &lt;code&gt;arrow&lt;/code&gt;, &lt;code&gt;duckdb&lt;/code&gt;, or other &lt;code&gt;DBI&lt;/code&gt;-compliant databases.&lt;/p&gt;
+&lt;p&gt;The newly released &lt;a href=&#34;https://github.com/DavZim/dataverifyr/&#34;&gt;&lt;code&gt;dataverifyr&lt;/code&gt;&lt;/a&gt; package (on &lt;a href=&#34;https://cran.r-project.org/package=dataverifyr&#34;&gt;CRAN&lt;/a&gt;) allows you to do exactly that: write rules in a yaml file, load the rules, check if the rules where matched and filter for data points that do not conform to the rules; all while respecting your data framework: &lt;code&gt;data.table&lt;/code&gt;, &lt;code&gt;dplyr&lt;/code&gt;, &lt;code&gt;arrow&lt;/code&gt;, &lt;code&gt;duckdb&lt;/code&gt;, or other &lt;code&gt;DBI&lt;/code&gt;-compliant databases.&lt;/p&gt;
 &lt;p&gt;The following is an excerpt of the Readme of ´dataverifyr` that highlights how to use the package.&lt;/p&gt;
 &lt;div id=&#34;larger-example-using-the-arrow-backend&#34; class=&#34;section level2&#34;&gt;
 &lt;h2&gt;Larger Example using the &lt;code&gt;arrow&lt;/code&gt; backend&lt;/h2&gt;
