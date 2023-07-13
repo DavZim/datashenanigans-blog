@@ -1,0 +1,3 @@
+blogdown::build_site()
+
+blogdown::bundle_site(output = "../davzim.github.io/")

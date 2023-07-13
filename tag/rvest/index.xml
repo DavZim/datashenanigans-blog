@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>rvest | Data Shenanigans</title>
-    <link>/tag/rvest/</link>
-      <atom:link href="/tag/rvest/index.xml" rel="self" type="application/rss+xml" />
+    <link>https://davzim.github.io/tag/rvest/</link>
+      <atom:link href="https://davzim.github.io/tag/rvest/index.xml" rel="self" type="application/rss+xml" />
     <description>rvest</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Thu, 30 Apr 2015 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2023</copyright><lastBuildDate>Thu, 30 Apr 2015 00:00:00 +0000</lastBuildDate>
     <image>
-      <url>/images/logo.svg</url>
+      <url>https://davzim.github.io/images/logo.svg</url>
       <title>rvest</title>
-      <link>/tag/rvest/</link>
+      <link>https://davzim.github.io/tag/rvest/</link>
     </image>
     
     <item>
       <title>Using rvest and dplyr to scrape data and look at aviation incidents</title>
-      <link>/blog/2015-04-30-rvest-aviation/</link>
+      <link>https://davzim.github.io/blog/2015-04-30-rvest-aviation/</link>
       <pubDate>Thu, 30 Apr 2015 00:00:00 +0000</pubDate>
-      <guid>/blog/2015-04-30-rvest-aviation/</guid>
+      <guid>https://davzim.github.io/blog/2015-04-30-rvest-aviation/</guid>
       <description>
 
 

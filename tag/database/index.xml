@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>database | Data Shenanigans</title>
-    <link>/tag/database/</link>
-      <atom:link href="/tag/database/index.xml" rel="self" type="application/rss+xml" />
+    <link>https://davzim.github.io/tag/database/</link>
+      <atom:link href="https://davzim.github.io/tag/database/index.xml" rel="self" type="application/rss+xml" />
     <description>database</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Mon, 18 May 2015 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2023</copyright><lastBuildDate>Mon, 18 May 2015 00:00:00 +0000</lastBuildDate>
     <image>
-      <url>/images/logo.svg</url>
+      <url>https://davzim.github.io/images/logo.svg</url>
       <title>database</title>
-      <link>/tag/database/</link>
+      <link>https://davzim.github.io/tag/database/</link>
     </image>
     
     <item>
       <title>Getting started with PostgreSQL in R</title>
-      <link>/blog/2015-05-18-getting-started-postgresql/</link>
+      <link>https://davzim.github.io/blog/2015-05-18-getting-started-postgresql/</link>
       <pubDate>Mon, 18 May 2015 00:00:00 +0000</pubDate>
-      <guid>/blog/2015-05-18-getting-started-postgresql/</guid>
+      <guid>https://davzim.github.io/blog/2015-05-18-getting-started-postgresql/</guid>
       <description>
 
 

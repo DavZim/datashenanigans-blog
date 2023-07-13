@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>ABM | Data Shenanigans</title>
-    <link>/tag/abm/</link>
-      <atom:link href="/tag/abm/index.xml" rel="self" type="application/rss+xml" />
+    <link>https://davzim.github.io/tag/abm/</link>
+      <atom:link href="https://davzim.github.io/tag/abm/index.xml" rel="self" type="application/rss+xml" />
     <description>ABM</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Tue, 01 Jan 2019 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2023</copyright><lastBuildDate>Tue, 01 Jan 2019 00:00:00 +0000</lastBuildDate>
     <image>
-      <url>/images/logo.svg</url>
+      <url>https://davzim.github.io/images/logo.svg</url>
       <title>ABM</title>
-      <link>/tag/abm/</link>
+      <link>https://davzim.github.io/tag/abm/</link>
     </image>
     
     <item>
       <title>SchellingR</title>
-      <link>/project/schellingr/</link>
+      <link>https://davzim.github.io/project/schellingr/</link>
       <pubDate>Tue, 01 Jan 2019 00:00:00 +0000</pubDate>
-      <guid>/project/schellingr/</guid>
+      <guid>https://davzim.github.io/project/schellingr/</guid>
       <description></description>
     </item>
     

@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>parallel | Data Shenanigans</title>
-    <link>/tag/parallel/</link>
-      <atom:link href="/tag/parallel/index.xml" rel="self" type="application/rss+xml" />
+    <link>https://davzim.github.io/tag/parallel/</link>
+      <atom:link href="https://davzim.github.io/tag/parallel/index.xml" rel="self" type="application/rss+xml" />
     <description>parallel</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Fri, 15 Jan 2016 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2023</copyright><lastBuildDate>Fri, 15 Jan 2016 00:00:00 +0000</lastBuildDate>
     <image>
-      <url>/images/logo.svg</url>
+      <url>https://davzim.github.io/images/logo.svg</url>
       <title>parallel</title>
-      <link>/tag/parallel/</link>
+      <link>https://davzim.github.io/tag/parallel/</link>
     </image>
     
     <item>
       <title>Speeding &#34;Bayesian Power Analysis t-test&#34; up with Snowfall</title>
-      <link>/blog/2016-01-15-speeding-bayesian-t-test/</link>
+      <link>https://davzim.github.io/blog/2016-01-15-speeding-bayesian-t-test/</link>
       <pubDate>Fri, 15 Jan 2016 00:00:00 +0000</pubDate>
-      <guid>/blog/2016-01-15-speeding-bayesian-t-test/</guid>
+      <guid>https://davzim.github.io/blog/2016-01-15-speeding-bayesian-t-test/</guid>
       <description>
 
 
@@ -65,9 +65,9 @@ sum(bf &amp;lt; (1/threshold))/nSim
     
     <item>
       <title>Simulating backtests of stock returns using Monte-Carlo and snowfall in parallel</title>
-      <link>/blog/2015-09-23-backtests-stock-returns/</link>
+      <link>https://davzim.github.io/blog/2015-09-23-backtests-stock-returns/</link>
       <pubDate>Wed, 23 Sep 2015 00:00:00 +0000</pubDate>
-      <guid>/blog/2015-09-23-backtests-stock-returns/</guid>
+      <guid>https://davzim.github.io/blog/2015-09-23-backtests-stock-returns/</guid>
       <description>
 
 

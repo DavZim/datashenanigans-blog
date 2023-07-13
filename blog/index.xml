@@ -2,21 +2,199 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Blog | Data Shenanigans</title>
-    <link>/blog/</link>
-      <atom:link href="/blog/index.xml" rel="self" type="application/rss+xml" />
+    <link>https://davzim.github.io/blog/</link>
+      <atom:link href="https://davzim.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
     <description>Blog</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Thu, 30 Nov 2017 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2023</copyright><lastBuildDate>Thu, 30 Nov 2017 00:00:00 +0000</lastBuildDate>
     <image>
-      <url>/images/logo.svg</url>
+      <url>https://davzim.github.io/images/logo.svg</url>
       <title>Blog</title>
-      <link>/blog/</link>
+      <link>https://davzim.github.io/blog/</link>
     </image>
     
     <item>
-      <title>Introducing RITCH: Parsing ITCH Files in R (Finance &amp; Market Microstructure)</title>
-      <link>/blog/2017-11-30-introducing-ritch/</link>
+      <title>Introducing dataverifyr: A Lightweight, Flexible, and Fast Data Validation Package that Can Handle All Sizes of Data </title>
+      <link>https://davzim.github.io/blog/2023-07-13-dataverifyr/</link>
       <pubDate>Thu, 30 Nov 2017 00:00:00 +0000</pubDate>
-      <guid>/blog/2017-11-30-introducing-ritch/</guid>
+      <guid>https://davzim.github.io/blog/2023-07-13-dataverifyr/</guid>
+      <description>
+
+
+&lt;p&gt;In every data project, there should be a check that the data actually looks like what you expect it to look like.
+This can be as simple as &lt;code&gt;stopifnot(all(data$values &amp;gt; 0))&lt;/code&gt;, but as with everything “simple”, you typically want to have some additional features, such as cleaner error messages, rules separated from your R script (eg in a yaml file), result visualization, and last but least, a library that does this as fast as possible.
+The last bit is especially important when you have the data in a database or as an &lt;code&gt;arrow&lt;/code&gt; &lt;code&gt;.parquet&lt;/code&gt; file, due to its size or complexity.&lt;/p&gt;
+&lt;p&gt;The newly released &lt;a href=&#34;https://davzim.github.io/dataverifyr/&#34;&gt;&lt;code&gt;dataverifyr&lt;/code&gt;&lt;/a&gt; package (on &lt;a href=&#34;https://cran.r-project.org/package=dataverifyr&#34;&gt;CRAN&lt;/a&gt;) allows you to do exactly that: write rules in a yaml file, load the rules, check if the rules where matched and filter for data points that do not conform to the rules; all while respecting your data framework: &lt;code&gt;data.table&lt;/code&gt;, &lt;code&gt;dplyr&lt;/code&gt;, &lt;code&gt;arrow&lt;/code&gt;, &lt;code&gt;duckdb&lt;/code&gt;, or other &lt;code&gt;DBI&lt;/code&gt;-compliant databases.&lt;/p&gt;
+&lt;p&gt;The following is an excerpt of the Readme of ´dataverifyr` that highlights how to use the package.&lt;/p&gt;
+&lt;div id=&#34;larger-example-using-the-arrow-backend&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Larger Example using the &lt;code&gt;arrow&lt;/code&gt; backend&lt;/h2&gt;
+&lt;p&gt;For a more involved example, using a different backend, let’s say we
+have a larger dataset of taxi trips from NY (see also the official
+&lt;a href=&#34;https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page&#34;&gt;source of the
+data&lt;/a&gt;),
+that we have saved as a local arrow dataset (using parquet as a data
+format), where we want to make sure that some variables are in-line with
+our expectations/rules.&lt;/p&gt;
+&lt;div id=&#34;download-and-prepare-data&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;1 Download and Prepare Data&lt;/h3&gt;
+&lt;p&gt;First we prepare the data by downloading it and writing the dataset to
+&lt;code&gt;.parquet&lt;/code&gt; files. This needs to be done only once and is shown for
+reproducibility reasons only, the actual &lt;code&gt;dataverifyr&lt;/code&gt; code is shown
+below the next block&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(arrow)
+url &amp;lt;- &amp;quot;https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2018-01.parquet&amp;quot;
+file &amp;lt;- &amp;quot;yellow_tripdata_2018-01.parquet&amp;quot;
+if (!file.exists(file)) download.file(url, file, method = &amp;quot;curl&amp;quot;)
+file.size(file) / 1e6 # in MB
+#&amp;gt; [1] 123.6685
+
+# quick check of the filesize
+d &amp;lt;- read_parquet(file)
+dim(d)
+#&amp;gt; [1] 8760687      19
+names(d)
+#&amp;gt;  [1] &amp;quot;VendorID&amp;quot;              &amp;quot;tpep_pickup_datetime&amp;quot;  &amp;quot;tpep_dropoff_datetime&amp;quot; &amp;quot;passenger_count&amp;quot;      
+#&amp;gt;  [5] &amp;quot;trip_distance&amp;quot;         &amp;quot;RatecodeID&amp;quot;            &amp;quot;store_and_fwd_flag&amp;quot;    &amp;quot;PULocationID&amp;quot;         
+#&amp;gt;  [9] &amp;quot;DOLocationID&amp;quot;          &amp;quot;payment_type&amp;quot;          &amp;quot;fare_amount&amp;quot;           &amp;quot;extra&amp;quot;                
+#&amp;gt; [13] &amp;quot;mta_tax&amp;quot;               &amp;quot;tip_amount&amp;quot;            &amp;quot;tolls_amount&amp;quot;          &amp;quot;improvement_surcharge&amp;quot;
+#&amp;gt; [17] &amp;quot;total_amount&amp;quot;          &amp;quot;congestion_surcharge&amp;quot;  &amp;quot;airport_fee&amp;quot;
+
+# write the dataset to disk
+write_dataset(d, &amp;quot;nyc-taxi-data&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;create-rules-in-yaml&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;2 Create Rules in &lt;code&gt;yaml&lt;/code&gt;&lt;/h3&gt;
+&lt;p&gt;Next, we can create some rules that we will use to check our data. As we
+saw earlier, we can create the rules in R using the &lt;code&gt;rule()&lt;/code&gt; and
+&lt;code&gt;ruleset()&lt;/code&gt; functions, there is however, the (in my opinion) preferred
+option to separate the code from the rules by writing the rules in a
+separate yaml file and reading them into R.&lt;/p&gt;
+&lt;p&gt;First we display the hand-written contents of the &lt;code&gt;nyc_data_rules.yaml&lt;/code&gt;
+file.&lt;/p&gt;
+&lt;pre class=&#34;yaml&#34;&gt;&lt;code&gt;- name: &amp;#39;Rule for: passenger_count&amp;#39;
+  expr: passenger_count &amp;gt;= 0 &amp;amp; passenger_count &amp;lt;= 10
+  allow_na: no
+  negate: no
+  index: 1
+- name: &amp;#39;Rule for: trip_distance&amp;#39;
+  expr: trip_distance &amp;gt;= 0 &amp;amp; trip_distance &amp;lt;= 1000
+  allow_na: no
+  negate: no
+  index: 2
+- name: &amp;#39;Rule for: payment_type&amp;#39;
+  expr: payment_type %in% c(0, 1, 2, 3, 4)
+  allow_na: no
+  negate: no
+  index: 3&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Then, we can load, display, and finally check the rules against the data&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;rules &amp;lt;- read_rules(&amp;quot;nyc_data_rules.yaml&amp;quot;)
+rules
+#&amp;gt; &amp;lt;Verification Ruleset with 3 elements&amp;gt;
+#&amp;gt;   [1] &amp;#39;Rule for: passenger_count&amp;#39; matching `passenger_count &amp;gt;= 0 &amp;amp; passenger_count &amp;lt;= 10` (allow_na: FALSE)
+#&amp;gt;   [2] &amp;#39;Rule for: trip_distance&amp;#39; matching `trip_distance &amp;gt;= 0 &amp;amp; trip_distance &amp;lt;= 1000` (allow_na: FALSE)
+#&amp;gt;   [3] &amp;#39;Rule for: payment_type&amp;#39; matching `payment_type %in% c(0, 1, 2, 3, 4)` (allow_na: FALSE)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;verify-that-the-data-matches-the-given-rules&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;3 Verify that the Data matches the given Rules&lt;/h3&gt;
+&lt;p&gt;Now we can check if the data follows our rules or if we have unexpected
+data points:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# open the dataset 
+ds &amp;lt;- open_dataset(&amp;quot;nyc-taxi-data/&amp;quot;)
+
+# perform the data validation check
+res &amp;lt;- check_data(ds, rules)
+res
+#&amp;gt; # A tibble: 3 × 10
+#&amp;gt;   name                      expr              allow…¹ negate   tests    pass  fail warn  error time 
+#&amp;gt;   &amp;lt;chr&amp;gt;                     &amp;lt;chr&amp;gt;             &amp;lt;lgl&amp;gt;   &amp;lt;lgl&amp;gt;    &amp;lt;int&amp;gt;   &amp;lt;int&amp;gt; &amp;lt;int&amp;gt; &amp;lt;chr&amp;gt; &amp;lt;chr&amp;gt; &amp;lt;drt&amp;gt;
+#&amp;gt; 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 &amp;quot;&amp;quot;    &amp;quot;&amp;quot;    0.56…
+#&amp;gt; 2 Rule for: trip_distance   trip_distance &amp;gt;=… FALSE   FALSE  8760687 8760686     1 &amp;quot;&amp;quot;    &amp;quot;&amp;quot;    0.43…
+#&amp;gt; 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 &amp;quot;&amp;quot;    &amp;quot;&amp;quot;    0.42…
+#&amp;gt; # … with abbreviated variable name ¹​allow_na
+
+plot_res(res)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;README-taxi3-1.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Using the power of &lt;code&gt;arrow&lt;/code&gt;, we were able to scan 8+mln observations for
+three rules in about 1.5 seconds (YMMV). As we can see from the results,
+there is one unexpected value, lets quickly investigate using the
+&lt;code&gt;filter_fails()&lt;/code&gt; function, which filters a dataset for the failed rule
+matches&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;res |&amp;gt;
+  filter_fails(ds) |&amp;gt; 
+  # only select a couple of variables for brevity
+  dplyr::select(tpep_pickup_datetime, tpep_dropoff_datetime, trip_distance)
+#&amp;gt; # A tibble: 1 × 3
+#&amp;gt;   tpep_pickup_datetime tpep_dropoff_datetime trip_distance
+#&amp;gt;   &amp;lt;dttm&amp;gt;               &amp;lt;dttm&amp;gt;                        &amp;lt;dbl&amp;gt;
+#&amp;gt; 1 2018-01-30 12:41:02  2018-01-30 12:42:09         189484.&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As we can see, this is probably a data error (a trip distance of 190k
+miles in 1 minute seems - ehm stellar…).&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;using-a-dbi-backend&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Using a &lt;code&gt;DBI&lt;/code&gt; Backend&lt;/h2&gt;
+&lt;p&gt;If you have a &lt;code&gt;SQLite&lt;/code&gt; or &lt;code&gt;duckdb&lt;/code&gt; database, you can use the package
+like this&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(DBI)
+library(dplyr)
+
+# connect to a duckdb database
+con &amp;lt;- dbConnect(duckdb::duckdb(&amp;quot;duckdb-database.duckdb&amp;quot;))
+# for demo purposes write the data once
+dbWriteTable(con, &amp;quot;mtcars&amp;quot;, mtcars)
+
+# create a tbl connection, which can be used in the checks
+tbl &amp;lt;- tbl(con, &amp;quot;mtcars&amp;quot;)
+
+# create rules
+rules &amp;lt;- ruleset(
+  rule(mpg &amp;gt; 10 &amp;amp; mpg &amp;lt; 30),
+  rule(cyl %in% c(4, 8)),
+  rule(vs %in% c(0, 1), allow_na = TRUE)
+)
+
+# check rules
+res &amp;lt;- check_data(tbl, rules)
+res
+#&amp;gt; # A tibble: 3 × 10
+#&amp;gt;   name          expr                allow_na negate tests  pass  fail warn  error time          
+#&amp;gt;   &amp;lt;chr&amp;gt;         &amp;lt;chr&amp;gt;               &amp;lt;lgl&amp;gt;    &amp;lt;lgl&amp;gt;  &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt; &amp;lt;chr&amp;gt; &amp;lt;drtn&amp;gt;        
+#&amp;gt; 1 Rule for: mpg mpg &amp;gt; 10 &amp;amp; mpg &amp;lt; 30 FALSE    FALSE     32    28     4 &amp;quot;&amp;quot;    &amp;quot;&amp;quot;    3.5227668 secs
+#&amp;gt; 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 &amp;quot;&amp;quot;    &amp;quot;&amp;quot;    0.2015200 secs
+#&amp;gt; 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 &amp;quot;&amp;quot;    &amp;quot;&amp;quot;    0.1898661 secs
+
+filter_fails(res, tbl, per_rule = TRUE)
+#&amp;gt; $`mpg &amp;gt; 10 &amp;amp; mpg &amp;lt; 30`
+#&amp;gt; # A tibble: 4 × 11
+#&amp;gt;     mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
+#&amp;gt;   &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;
+#&amp;gt; 1  32.4     4  78.7    66  4.08 2.2   19.47     1     1     4     1
+#&amp;gt; 2  30.4     4  75.7    52  4.93 1.615 18.52     1     1     4     2
+#&amp;gt; 3  33.9     4  71.1    65  4.22 1.835 19.9      1     1     4     1
+#&amp;gt; 4  30.4     4  95.1   113  3.77 1.513 16.9      1     1     5     2
+#&amp;gt; 
+#&amp;gt; $`cyl %in% c(4, 8)`
+#&amp;gt; # A tibble: 7 × 11
+#&amp;gt;     mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
+#&amp;gt;   &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;
+#&amp;gt; 1  21       6 160     110  3.9  2.62  16.46     0     1     4     4
+#&amp;gt; 2  21       6 160     110  3.9  2.875 17.02     0     1     4     4
+#&amp;gt; 3  21.4     6 258     110  3.08 3.215 19.44     1     0     3     1
+#&amp;gt; 4  18.1     6 225     105  2.76 3.46  20.22     1     0     3     1
+#&amp;gt; 5  19.2     6 167.6   123  3.92 3.44  18.3      1     0     4     4
+#&amp;gt; 6  17.8     6 167.6   123  3.92 3.44  18.9      1     0     4     4
+#&amp;gt; 7  19.7     6 145     175  3.62 2.77  15.5      0     1     5     6
+
+# lastly disconnect from the database again
+dbDisconnect(con, shutdown = TRUE)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Introducing RITCH: Parsing ITCH Files in R (Finance &amp; Market Microstructure)</title>
+      <link>https://davzim.github.io/blog/2017-11-30-introducing-ritch/</link>
+      <pubDate>Thu, 30 Nov 2017 00:00:00 +0000</pubDate>
+      <guid>https://davzim.github.io/blog/2017-11-30-introducing-ritch/</guid>
       <description>
 
 
@@ -195,9 +373,9 @@ Otherwise, if you need more functionality for additional message types, please f
     
     <item>
       <title>The Importance of Out-of-Sample Tests and Lags in Forecasts and Trading Algorithms</title>
-      <link>/blog/2016-10-24-oos-testing/</link>
+      <link>https://davzim.github.io/blog/2016-10-24-oos-testing/</link>
       <pubDate>Mon, 24 Oct 2016 00:00:00 +0000</pubDate>
-      <guid>/blog/2016-10-24-oos-testing/</guid>
+      <guid>https://davzim.github.io/blog/2016-10-24-oos-testing/</guid>
       <description>
 
 
@@ -236,7 +414,7 @@ ggplot(df_none, aes(x = date, y = earnings)) +
   labs(x = &amp;quot;Date&amp;quot;, y = &amp;quot;Earnings Multiple&amp;quot;, title = &amp;quot;No Proper Tests&amp;quot;) +
   theme_light() +
   scale_y_continuous(labels = comma)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-10-24-oos-testing_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-10-24-oos-testing_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Something’s fishy!
 I wouldn’t expect a trading algorithm based on a simple linear regression to turn USD 1 initial investment into USD 25,876.65 after 6 years.
 Why does that performance seem so wrong? That is because an algorithm at the time of prediction wouldn’t have access to the data that we trained it on.
@@ -275,7 +453,7 @@ ggplot(df_plot, aes(x = date, y = value, color = variable)) +
   scale_color_manual(name = &amp;quot;Investment&amp;quot;, labels = c(&amp;quot;AAPL&amp;quot;, &amp;quot;Algorithm&amp;quot;),
                      values = c(&amp;quot;#1b7837&amp;quot;, &amp;quot;#762a83&amp;quot;)) + 
   theme_light()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-10-24-oos-testing_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-10-24-oos-testing_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;That looks a bit more reasonable, though still unrealistic.
 The algorithm outperforms the Apple stock by some magnitude of 6; an investment of USD 1 “only” gets turned into 25 (an annual growth rate of rougly 60%).
 This unreasonable high return is due to the fact that we still haven’t conducted a proper out-of-sample test.&lt;/p&gt;
@@ -337,7 +515,7 @@ ggplot(plot_df, aes(x = date, y = value, color = variable)) +
                      values = c(&amp;quot;#1b7837&amp;quot;, &amp;quot;#762a83&amp;quot;)) + 
   theme_light() + 
   facet_wrap(~type, scales = &amp;quot;free&amp;quot;, labeller = as_labeller(facet_names))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-10-24-oos-testing_files/figure-html/unnamed-chunk-5-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-10-24-oos-testing_files/figure-html/unnamed-chunk-5-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;As expected, the algorithm returns less than the stock it matches against (AAPL).
 If we would invest in this simple algorithm, I would expect our investment to go down a lot more.
 All of this is of course without considering trading, execution, and other transaction costs, which would even further decrease the returns of our trading algorithm.
@@ -349,9 +527,9 @@ As always, if you find this interesting, find an error, or if you have a questio
     
     <item>
       <title>A Gentle Introduction to Finance using R: Efficient Frontier and CAPM - Part 1</title>
-      <link>/blog/2016-05-24-gentle-capm-i/</link>
+      <link>https://davzim.github.io/blog/2016-05-24-gentle-capm-i/</link>
       <pubDate>Tue, 24 May 2016 00:00:00 +0000</pubDate>
-      <guid>/blog/2016-05-24-gentle-capm-i/</guid>
+      <guid>https://davzim.github.io/blog/2016-05-24-gentle-capm-i/</guid>
       <description>
 
 
@@ -393,7 +571,7 @@ ggplot(dt, aes(x = date, y = idx_price, color = ticker)) +
   theme_bw() + ggtitle(&amp;quot;Price Developments&amp;quot;) +
   xlab(&amp;quot;Date&amp;quot;) + ylab(&amp;quot;Price\n(Indexed 2000 = 1)&amp;quot;) +
   scale_color_discrete(name = &amp;quot;Company&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-2-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-2-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Altough we can see that Google outperformed the other two, we can also see that it seems it was risikier to invest in Google, as shown by the large spikes and drawdowns.
 This is the principle of risk-return tradeoff that is fundamental to the CAPM.
 Usually, risk is defined as volatility, which is defined as the standard deviation of the returns
@@ -453,7 +631,7 @@ In our example it looks like this.&lt;/p&gt;
   xlab(&amp;quot;Volatility&amp;quot;) + ylab(&amp;quot;Expected Returns&amp;quot;) +
   scale_y_continuous(label = percent, limits = c(0, 0.03)) +
   scale_x_continuous(label = percent, limits = c(0, 0.1))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Given that you had to take only a single stock and given past performance indicates future performance (more on the assumptions later, but for now: historic performances almost never indicates future performances), you would probably choose Google as your best investment choice.
 However, the exclusive option is not realistic as there is something called diversification and you can reduce risk by buying multiple stocks.&lt;/p&gt;
 &lt;p&gt;Coming back to the examples from the beginning: If you had the choice between three fictive investments A (expected return of 5%, volatility of 4%), B (exp ret of 5%, volatility of 5%), or C (exp ret 6%, volatility of 5%), you would prefer A over B (we say A is efficient to B) as it has less volatility, and C over B as it has a higher expected return.
@@ -548,7 +726,7 @@ ggplot() +
   scale_x_continuous(label = percent, 
                      limits = c(0, max(two_assets$sd_p) * 1.2)) +
   scale_color_continuous(name = expression(omega[x]), labels = percent)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;With the color coding we can see that the upper point stands for stock x (&lt;span class=&#34;math inline&#34;&gt;\(\omega_x = 100%\)&lt;/span&gt;) and the lower point stands for stock y (&lt;span class=&#34;math inline&#34;&gt;\(\omega_x = 0%\)&lt;/span&gt;, thus &lt;span class=&#34;math inline&#34;&gt;\(\omega_y = 100%\)&lt;/span&gt;).
 We also see that all possible portfolios lay on a curve.
 That means the line stands for all possible portfolios combining the two assets.
@@ -631,7 +809,7 @@ ggplot() +
   scale_x_continuous(label = percent, limits = c(0, max(three_assets$sd_p) * 1.2)) +
   scale_color_gradientn(colors = c(&amp;quot;red&amp;quot;, &amp;quot;blue&amp;quot;, &amp;quot;yellow&amp;quot;),
                         name = expression(omega[x] - omega[z]), labels = percent)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-8-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-8-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;We see that the area of possible portfolios has expanded into a third dimension.
 The colors try to show the two different weights.
 A yellow color indicates a portfolio consisting mainly of the asset x, a blue color indicates asset y, and a red area indicates a portfolio of asset z.
@@ -745,7 +923,7 @@ ggplot(df_table, aes(x = sd, y = er)) +
   xlab(&amp;quot;Volatility&amp;quot;) + ylab(&amp;quot;Expected Returns&amp;quot;) +
   scale_y_continuous(label = percent, limits = c(0, max(df_table$er) * 1.2)) +
   scale_x_continuous(label = percent, limits = c(0, max(df_table$sd) * 1.2))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Given the values for &lt;span class=&#34;math inline&#34;&gt;\(\alpha\)&lt;/span&gt;, &lt;span class=&#34;math inline&#34;&gt;\(\beta\)&lt;/span&gt;, &lt;span class=&#34;math inline&#34;&gt;\(\gamma\)&lt;/span&gt;, and &lt;span class=&#34;math inline&#34;&gt;\(\delta\)&lt;/span&gt; we receive the function for the frontier as&lt;/p&gt;
 &lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[
 \hat{r}_{ef}(\sigma) = \frac{147.8}{4037.6} \pm \sqrt{\left(\frac{147.8}{4037.6}\right)^2 - \frac{6.0 - 2339.9 * \sigma^2}{4037.6}}.
@@ -811,7 +989,7 @@ plot_dt&lt;/code&gt;&lt;/pre&gt;
   xlab(&amp;quot;Volatility&amp;quot;) + ylab(&amp;quot;Expected Returns&amp;quot;) +
   scale_y_continuous(label = percent, limits = c(0, max(df_table$er) * 1.2)) +
   scale_x_continuous(label = percent, limits = c(0, max(df_table$sd) * 1.2))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Comparing the two scenarios we see that restricting the weights (prohibiting short-sells), we also restrict the number of possible portfolios.
 In some cases, restricting short-sells yields portfolios with less expected returns or a higher expected volatility.&lt;/p&gt;
 &lt;p&gt;To directly compare the two options we can use the following code.&lt;/p&gt;
@@ -843,7 +1021,7 @@ ggplot() +
   scale_x_continuous(label = percent, limits = c(0, max(df_table$sd) * 1.2)) +
   scale_color_manual(name = &amp;quot;Short-Sells&amp;quot;, values = c(&amp;quot;red&amp;quot;, &amp;quot;blue&amp;quot;), labels = c(&amp;quot;Allowed&amp;quot;, &amp;quot;Prohibited&amp;quot;)) +
   scale_linetype_manual(name = &amp;quot;Efficient&amp;quot;, values = c(2, 1))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-13-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-13-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;There are many ways to do this and I am certainly not claiming that this is the only option for portfolio selection, but the efficient frontier is a very useful tool to understand one of the basics of finance.
 The question of which portfolio of the efficient frontier is considered best within the model-frameworks, has to be left open in this part, but will be adressed using CAPM in part II.&lt;/p&gt;
 &lt;p&gt;This closes the first part of the series.
@@ -873,9 +1051,9 @@ r_t = log\left(\frac{P_t}{P_{t-1}}\right) = log(P_t) - log(P_{t-1})
     
     <item>
       <title>Speeding &#34;Bayesian Power Analysis t-test&#34; up with Snowfall</title>
-      <link>/blog/2016-01-15-speeding-bayesian-t-test/</link>
+      <link>https://davzim.github.io/blog/2016-01-15-speeding-bayesian-t-test/</link>
       <pubDate>Fri, 15 Jan 2016 00:00:00 +0000</pubDate>
-      <guid>/blog/2016-01-15-speeding-bayesian-t-test/</guid>
+      <guid>https://davzim.github.io/blog/2016-01-15-speeding-bayesian-t-test/</guid>
       <description>
 
 
@@ -924,9 +1102,9 @@ sum(bf &amp;lt; (1/threshold))/nSim
     
     <item>
       <title>Simulating backtests of stock returns using Monte-Carlo and snowfall in parallel</title>
-      <link>/blog/2015-09-23-backtests-stock-returns/</link>
+      <link>https://davzim.github.io/blog/2015-09-23-backtests-stock-returns/</link>
       <pubDate>Wed, 23 Sep 2015 00:00:00 +0000</pubDate>
-      <guid>/blog/2015-09-23-backtests-stock-returns/</guid>
+      <guid>https://davzim.github.io/blog/2015-09-23-backtests-stock-returns/</guid>
       <description>
 
 
@@ -1211,9 +1389,9 @@ Furthermore, if you have any questions, comments or ideas, please leave a commen
     
     <item>
       <title>Getting that X with the Glog function and Lambert&#39;s W</title>
-      <link>/blog/2015-07-16-lamberts-w/</link>
+      <link>https://davzim.github.io/blog/2015-07-16-lamberts-w/</link>
       <pubDate>Thu, 16 Jul 2015 00:00:00 +0000</pubDate>
-      <guid>/blog/2015-07-16-lamberts-w/</guid>
+      <guid>https://davzim.github.io/blog/2015-07-16-lamberts-w/</guid>
       <description>
 
 
@@ -1265,9 +1443,9 @@ autoplot(microbenchmark(
     
     <item>
       <title>Getting started with PostgreSQL in R</title>
-      <link>/blog/2015-05-18-getting-started-postgresql/</link>
+      <link>https://davzim.github.io/blog/2015-05-18-getting-started-postgresql/</link>
       <pubDate>Mon, 18 May 2015 00:00:00 +0000</pubDate>
-      <guid>/blog/2015-05-18-getting-started-postgresql/</guid>
+      <guid>https://davzim.github.io/blog/2015-05-18-getting-started-postgresql/</guid>
       <description>
 
 
@@ -1470,9 +1648,9 @@ df2 &amp;lt;- SQLCommand(&amp;quot;SELECT * FROM cartable&amp;quot;)&lt;/code&gt
     
     <item>
       <title>Agent Based Modelling with data.table OR how to model urban migration with R</title>
-      <link>/blog/2015-05-12-abm-with-rdatatable/</link>
+      <link>https://davzim.github.io/blog/2015-05-12-abm-with-rdatatable/</link>
       <pubDate>Tue, 12 May 2015 00:00:00 +0000</pubDate>
-      <guid>/blog/2015-05-12-abm-with-rdatatable/</guid>
+      <guid>https://davzim.github.io/blog/2015-05-12-abm-with-rdatatable/</guid>
       <description>
 
 
@@ -1760,19 +1938,19 @@ sh &amp;lt;- run_schelling(size = 10, percent_empty = 0.2,
                     max_rounds = 100)
 
 plot_grid(sh, select_round = 8, title = TRUE, emoji = TRUE)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2015-05-12-abm-with-rdatatable_files/figure-html/unnamed-chunk-13-1.png&#34; width=&#34;672&#34; /&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2015-05-12-abm-with-rdatatable_files/figure-html/unnamed-chunk-13-1.png&#34; width=&#34;672&#34; /&gt;
 or even better&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plot_grid(sh, select_round = 8, title = TRUE, emoji = TRUE, animate = TRUE)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2015-05-12-abm-with-rdatatable_files/figure-html/unnamed-chunk-14-1.gif&#34; /&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2015-05-12-abm-with-rdatatable_files/figure-html/unnamed-chunk-14-1.gif&#34; /&gt;&lt;!-- --&gt;&lt;/p&gt;
 &lt;/div&gt;
 </description>
     </item>
     
     <item>
       <title>Using rvest and dplyr to scrape data and look at aviation incidents</title>
-      <link>/blog/2015-04-30-rvest-aviation/</link>
+      <link>https://davzim.github.io/blog/2015-04-30-rvest-aviation/</link>
       <pubDate>Thu, 30 Apr 2015 00:00:00 +0000</pubDate>
-      <guid>/blog/2015-04-30-rvest-aviation/</guid>
+      <guid>https://davzim.github.io/blog/2015-04-30-rvest-aviation/</guid>
       <description>
 
 

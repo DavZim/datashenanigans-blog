@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>ITCH | Data Shenanigans</title>
-    <link>/tag/itch/</link>
-      <atom:link href="/tag/itch/index.xml" rel="self" type="application/rss+xml" />
+    <link>https://davzim.github.io/tag/itch/</link>
+      <atom:link href="https://davzim.github.io/tag/itch/index.xml" rel="self" type="application/rss+xml" />
     <description>ITCH</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Thu, 30 Nov 2017 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2023</copyright><lastBuildDate>Thu, 30 Nov 2017 00:00:00 +0000</lastBuildDate>
     <image>
-      <url>/images/logo.svg</url>
+      <url>https://davzim.github.io/images/logo.svg</url>
       <title>ITCH</title>
-      <link>/tag/itch/</link>
+      <link>https://davzim.github.io/tag/itch/</link>
     </image>
     
     <item>
       <title>Introducing RITCH: Parsing ITCH Files in R (Finance &amp; Market Microstructure)</title>
-      <link>/blog/2017-11-30-introducing-ritch/</link>
+      <link>https://davzim.github.io/blog/2017-11-30-introducing-ritch/</link>
       <pubDate>Thu, 30 Nov 2017 00:00:00 +0000</pubDate>
-      <guid>/blog/2017-11-30-introducing-ritch/</guid>
+      <guid>https://davzim.github.io/blog/2017-11-30-introducing-ritch/</guid>
       <description>
 
 

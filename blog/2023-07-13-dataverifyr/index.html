@@ -1,0 +1,1173 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.8.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="David Zimmermann, PhD">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="In every data project, there should be a check that the data actually looks like what you expect it to look like.This can be as simple as stopifnot(all(data$values &gt; 0)), but as with everything “simple”, you typically want to have some additional features, such as cleaner error messages, rules separated from your R script (eg in a yaml file), result visualization, and last but least, a library that does this as fast as possible.">
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://davzim.github.io/blog/2023-07-13-dataverifyr/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="#2962ff">
+  
+
+  
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.0-1/css/all.min.css" integrity="sha256-4w9DunooKSr3MFXHXWyFER38WmPdm361bQS/2KUWZbU=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/github.min.css" crossorigin="anonymous" title="hl-light">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+        
+      
+    
+
+    
+
+    
+
+    
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.1.2/lazysizes.min.js" integrity="sha256-Md1qLToewPeKjfAHU1zyPwOutccPAm5tahnaw7Osw0A=" crossorigin="anonymous" async></script>
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+        
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700%7CRoboto:400,400italic,700%7CRoboto+Mono&display=swap">
+  
+
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.css">
+
+  
+
+
+
+
+  
+
+
+  
+  
+
+  
+
+  <link rel="manifest" href="/index.webmanifest">
+  <link rel="icon" type="image/png" href="/images/icon_hu4458f371187753ae19db47310131318b_36217_32x32_fill_lanczos_center_3.png">
+  <link rel="apple-touch-icon" type="image/png" href="/images/icon_hu4458f371187753ae19db47310131318b_36217_192x192_fill_lanczos_center_3.png">
+
+  <link rel="canonical" href="https://davzim.github.io/blog/2023-07-13-dataverifyr/">
+
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary">
+  
+  <meta property="og:site_name" content="Data Shenanigans">
+  <meta property="og:url" content="https://davzim.github.io/blog/2023-07-13-dataverifyr/">
+  <meta property="og:title" content="Introducing dataverifyr: A Lightweight, Flexible, and Fast Data Validation Package that Can Handle All Sizes of Data  | Data Shenanigans">
+  <meta property="og:description" content="In every data project, there should be a check that the data actually looks like what you expect it to look like.This can be as simple as stopifnot(all(data$values &gt; 0)), but as with everything “simple”, you typically want to have some additional features, such as cleaner error messages, rules separated from your R script (eg in a yaml file), result visualization, and last but least, a library that does this as fast as possible."><meta property="og:image" content="https://davzim.github.io/images/logo.svg">
+  <meta property="twitter:image" content="https://davzim.github.io/images/logo.svg"><meta property="og:locale" content="en-us">
+  
+    
+      <meta property="article:published_time" content="2017-11-30T00:00:00&#43;00:00">
+    
+    <meta property="article:modified_time" content="2017-11-30T00:00:00&#43;00:00">
+  
+
+  
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>Introducing dataverifyr: A Lightweight, Flexible, and Fast Data Validation Package that Can Handle All Sizes of Data  | Data Shenanigans</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+    <img src="/images/logo.svg" height="70" width="70">
+      
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Data Shenanigans</a>
+    </div>
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Data Shenanigans</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#blog"><span>Blog</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#talks"><span>Talks</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Projects</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>About</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+      
+      <li class="nav-item">
+        <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+      </li>
+      
+
+      
+
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>Introducing dataverifyr: A Lightweight, Flexible, and Fast Data Validation Package that Can Handle All Sizes of Data </h1>
+
+  
+
+  
+    
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    2017-11-30
+  </span>
+  
+
+  
+
+  
+
+  
+  
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/category/r/">R</a></span>
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      
+
+
+<p>In every data project, there should be a check that the data actually looks like what you expect it to look like.
+This can be as simple as <code>stopifnot(all(data$values &gt; 0))</code>, but as with everything “simple”, you typically want to have some additional features, such as cleaner error messages, rules separated from your R script (eg in a yaml file), result visualization, and last but least, a library that does this as fast as possible.
+The last bit is especially important when you have the data in a database or as an <code>arrow</code> <code>.parquet</code> file, due to its size or complexity.</p>
+<p>The newly released <a href="https://davzim.github.io/dataverifyr/"><code>dataverifyr</code></a> package (on <a href="https://cran.r-project.org/package=dataverifyr">CRAN</a>) allows you to do exactly that: write rules in a yaml file, load the rules, check if the rules where matched and filter for data points that do not conform to the rules; all while respecting your data framework: <code>data.table</code>, <code>dplyr</code>, <code>arrow</code>, <code>duckdb</code>, or other <code>DBI</code>-compliant databases.</p>
+<p>The following is an excerpt of the Readme of ´dataverifyr` that highlights how to use the package.</p>
+<div id="larger-example-using-the-arrow-backend" class="section level2">
+<h2>Larger Example using the <code>arrow</code> backend</h2>
+<p>For a more involved example, using a different backend, let’s say we
+have a larger dataset of taxi trips from NY (see also the official
+<a href="https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page">source of the
+data</a>),
+that we have saved as a local arrow dataset (using parquet as a data
+format), where we want to make sure that some variables are in-line with
+our expectations/rules.</p>
+<div id="download-and-prepare-data" class="section level3">
+<h3>1 Download and Prepare Data</h3>
+<p>First we prepare the data by downloading it and writing the dataset to
+<code>.parquet</code> files. This needs to be done only once and is shown for
+reproducibility reasons only, the actual <code>dataverifyr</code> code is shown
+below the next block</p>
+<pre class="r"><code>library(arrow)
+url &lt;- &quot;https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2018-01.parquet&quot;
+file &lt;- &quot;yellow_tripdata_2018-01.parquet&quot;
+if (!file.exists(file)) download.file(url, file, method = &quot;curl&quot;)
+file.size(file) / 1e6 # in MB
+#&gt; [1] 123.6685
+
+# quick check of the filesize
+d &lt;- read_parquet(file)
+dim(d)
+#&gt; [1] 8760687      19
+names(d)
+#&gt;  [1] &quot;VendorID&quot;              &quot;tpep_pickup_datetime&quot;  &quot;tpep_dropoff_datetime&quot; &quot;passenger_count&quot;      
+#&gt;  [5] &quot;trip_distance&quot;         &quot;RatecodeID&quot;            &quot;store_and_fwd_flag&quot;    &quot;PULocationID&quot;         
+#&gt;  [9] &quot;DOLocationID&quot;          &quot;payment_type&quot;          &quot;fare_amount&quot;           &quot;extra&quot;                
+#&gt; [13] &quot;mta_tax&quot;               &quot;tip_amount&quot;            &quot;tolls_amount&quot;          &quot;improvement_surcharge&quot;
+#&gt; [17] &quot;total_amount&quot;          &quot;congestion_surcharge&quot;  &quot;airport_fee&quot;
+
+# write the dataset to disk
+write_dataset(d, &quot;nyc-taxi-data&quot;)</code></pre>
+</div>
+<div id="create-rules-in-yaml" class="section level3">
+<h3>2 Create Rules in <code>yaml</code></h3>
+<p>Next, we can create some rules that we will use to check our data. As we
+saw earlier, we can create the rules in R using the <code>rule()</code> and
+<code>ruleset()</code> functions, there is however, the (in my opinion) preferred
+option to separate the code from the rules by writing the rules in a
+separate yaml file and reading them into R.</p>
+<p>First we display the hand-written contents of the <code>nyc_data_rules.yaml</code>
+file.</p>
+<pre class="yaml"><code>- name: &#39;Rule for: passenger_count&#39;
+  expr: passenger_count &gt;= 0 &amp; passenger_count &lt;= 10
+  allow_na: no
+  negate: no
+  index: 1
+- name: &#39;Rule for: trip_distance&#39;
+  expr: trip_distance &gt;= 0 &amp; trip_distance &lt;= 1000
+  allow_na: no
+  negate: no
+  index: 2
+- name: &#39;Rule for: payment_type&#39;
+  expr: payment_type %in% c(0, 1, 2, 3, 4)
+  allow_na: no
+  negate: no
+  index: 3</code></pre>
+<p>Then, we can load, display, and finally check the rules against the data</p>
+<pre class="r"><code>rules &lt;- read_rules(&quot;nyc_data_rules.yaml&quot;)
+rules
+#&gt; &lt;Verification Ruleset with 3 elements&gt;
+#&gt;   [1] &#39;Rule for: passenger_count&#39; matching `passenger_count &gt;= 0 &amp; passenger_count &lt;= 10` (allow_na: FALSE)
+#&gt;   [2] &#39;Rule for: trip_distance&#39; matching `trip_distance &gt;= 0 &amp; trip_distance &lt;= 1000` (allow_na: FALSE)
+#&gt;   [3] &#39;Rule for: payment_type&#39; matching `payment_type %in% c(0, 1, 2, 3, 4)` (allow_na: FALSE)</code></pre>
+</div>
+<div id="verify-that-the-data-matches-the-given-rules" class="section level3">
+<h3>3 Verify that the Data matches the given Rules</h3>
+<p>Now we can check if the data follows our rules or if we have unexpected
+data points:</p>
+<pre class="r"><code># open the dataset 
+ds &lt;- open_dataset(&quot;nyc-taxi-data/&quot;)
+
+# perform the data validation check
+res &lt;- check_data(ds, rules)
+res
+#&gt; # A tibble: 3 × 10
+#&gt;   name                      expr              allow…¹ negate   tests    pass  fail warn  error time 
+#&gt;   &lt;chr&gt;                     &lt;chr&gt;             &lt;lgl&gt;   &lt;lgl&gt;    &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt; &lt;drt&gt;
+#&gt; 1 Rule for: passenger_count passenger_count … FALSE   FALSE  8760687 8760687     0 &quot;&quot;    &quot;&quot;    0.56…
+#&gt; 2 Rule for: trip_distance   trip_distance &gt;=… FALSE   FALSE  8760687 8760686     1 &quot;&quot;    &quot;&quot;    0.43…
+#&gt; 3 Rule for: payment_type    payment_type %in… FALSE   FALSE  8760687 8760687     0 &quot;&quot;    &quot;&quot;    0.42…
+#&gt; # … with abbreviated variable name ¹​allow_na
+
+plot_res(res)</code></pre>
+<p><img src="README-taxi3-1.png" /></p>
+<p>Using the power of <code>arrow</code>, we were able to scan 8+mln observations for
+three rules in about 1.5 seconds (YMMV). As we can see from the results,
+there is one unexpected value, lets quickly investigate using the
+<code>filter_fails()</code> function, which filters a dataset for the failed rule
+matches</p>
+<pre class="r"><code>res |&gt;
+  filter_fails(ds) |&gt; 
+  # only select a couple of variables for brevity
+  dplyr::select(tpep_pickup_datetime, tpep_dropoff_datetime, trip_distance)
+#&gt; # A tibble: 1 × 3
+#&gt;   tpep_pickup_datetime tpep_dropoff_datetime trip_distance
+#&gt;   &lt;dttm&gt;               &lt;dttm&gt;                        &lt;dbl&gt;
+#&gt; 1 2018-01-30 12:41:02  2018-01-30 12:42:09         189484.</code></pre>
+<p>As we can see, this is probably a data error (a trip distance of 190k
+miles in 1 minute seems - ehm stellar…).</p>
+</div>
+</div>
+<div id="using-a-dbi-backend" class="section level2">
+<h2>Using a <code>DBI</code> Backend</h2>
+<p>If you have a <code>SQLite</code> or <code>duckdb</code> database, you can use the package
+like this</p>
+<pre class="r"><code>library(DBI)
+library(dplyr)
+
+# connect to a duckdb database
+con &lt;- dbConnect(duckdb::duckdb(&quot;duckdb-database.duckdb&quot;))
+# for demo purposes write the data once
+dbWriteTable(con, &quot;mtcars&quot;, mtcars)
+
+# create a tbl connection, which can be used in the checks
+tbl &lt;- tbl(con, &quot;mtcars&quot;)
+
+# create rules
+rules &lt;- ruleset(
+  rule(mpg &gt; 10 &amp; mpg &lt; 30),
+  rule(cyl %in% c(4, 8)),
+  rule(vs %in% c(0, 1), allow_na = TRUE)
+)
+
+# check rules
+res &lt;- check_data(tbl, rules)
+res
+#&gt; # A tibble: 3 × 10
+#&gt;   name          expr                allow_na negate tests  pass  fail warn  error time          
+#&gt;   &lt;chr&gt;         &lt;chr&gt;               &lt;lgl&gt;    &lt;lgl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;drtn&gt;        
+#&gt; 1 Rule for: mpg mpg &gt; 10 &amp; mpg &lt; 30 FALSE    FALSE     32    28     4 &quot;&quot;    &quot;&quot;    3.5227668 secs
+#&gt; 2 Rule for: cyl cyl %in% c(4, 8)    FALSE    FALSE     32    25     7 &quot;&quot;    &quot;&quot;    0.2015200 secs
+#&gt; 3 Rule for: vs  vs %in% c(0, 1)     TRUE     FALSE     32    32     0 &quot;&quot;    &quot;&quot;    0.1898661 secs
+
+filter_fails(res, tbl, per_rule = TRUE)
+#&gt; $`mpg &gt; 10 &amp; mpg &lt; 30`
+#&gt; # A tibble: 4 × 11
+#&gt;     mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
+#&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+#&gt; 1  32.4     4  78.7    66  4.08 2.2   19.47     1     1     4     1
+#&gt; 2  30.4     4  75.7    52  4.93 1.615 18.52     1     1     4     2
+#&gt; 3  33.9     4  71.1    65  4.22 1.835 19.9      1     1     4     1
+#&gt; 4  30.4     4  95.1   113  3.77 1.513 16.9      1     1     5     2
+#&gt; 
+#&gt; $`cyl %in% c(4, 8)`
+#&gt; # A tibble: 7 × 11
+#&gt;     mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
+#&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+#&gt; 1  21       6 160     110  3.9  2.62  16.46     0     1     4     4
+#&gt; 2  21       6 160     110  3.9  2.875 17.02     0     1     4     4
+#&gt; 3  21.4     6 258     110  3.08 3.215 19.44     1     0     3     1
+#&gt; 4  18.1     6 225     105  2.76 3.46  20.22     1     0     3     1
+#&gt; 5  19.2     6 167.6   123  3.92 3.44  18.3      1     0     4     4
+#&gt; 6  17.8     6 167.6   123  3.92 3.44  18.9      1     0     4     4
+#&gt; 7  19.7     6 145     175  3.62 2.77  15.5      0     1     5     6
+
+# lastly disconnect from the database again
+dbDisconnect(con, shutdown = TRUE)</code></pre>
+</div>
+
+    </div>
+
+    
+
+
+
+
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="/tag/r/">R</a>
+  
+  <a class="badge badge-light" href="/tag/package/">package</a>
+  
+  <a class="badge badge-light" href="/tag/verification/">verification</a>
+  
+  <a class="badge badge-light" href="/tag/data/">data</a>
+  
+</div>
+
+
+
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=https://davzim.github.io/blog/2023-07-13-dataverifyr/&amp;text=Introducing%20dataverifyr:%20A%20Lightweight,%20Flexible,%20and%20Fast%20Data%20Validation%20Package%20that%20Can%20Handle%20All%20Sizes%20of%20Data%20" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=https://davzim.github.io/blog/2023-07-13-dataverifyr/&amp;t=Introducing%20dataverifyr:%20A%20Lightweight,%20Flexible,%20and%20Fast%20Data%20Validation%20Package%20that%20Can%20Handle%20All%20Sizes%20of%20Data%20" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Introducing%20dataverifyr:%20A%20Lightweight,%20Flexible,%20and%20Fast%20Data%20Validation%20Package%20that%20Can%20Handle%20All%20Sizes%20of%20Data%20&amp;body=https://davzim.github.io/blog/2023-07-13-dataverifyr/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=https://davzim.github.io/blog/2023-07-13-dataverifyr/&amp;title=Introducing%20dataverifyr:%20A%20Lightweight,%20Flexible,%20and%20Fast%20Data%20Validation%20Package%20that%20Can%20Handle%20All%20Sizes%20of%20Data%20" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Introducing%20dataverifyr:%20A%20Lightweight,%20Flexible,%20and%20Fast%20Data%20Validation%20Package%20that%20Can%20Handle%20All%20Sizes%20of%20Data%20%20https://davzim.github.io/blog/2023-07-13-dataverifyr/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=https://davzim.github.io/blog/2023-07-13-dataverifyr/&amp;title=Introducing%20dataverifyr:%20A%20Lightweight,%20Flexible,%20and%20Fast%20Data%20Validation%20Package%20that%20Can%20Handle%20All%20Sizes%20of%20Data%20" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+  
+    
+    
+    
+      
+    
+    
+    
+    <div class="media author-card content-widget-hr">
+      
+        
+        <img class="avatar mr-3 avatar-circle" src="/authors/admin/avatar_hud9c4e36c3980792791c57ad7608ee54f_170016_270x270_fill_lanczos_center_3.png" alt="David Zimmermann, PhD">
+      
+
+      <div class="media-body">
+        <h5 class="card-title"><a href="https://davzim.github.io/">David Zimmermann, PhD</a></h5>
+        <h6 class="card-subtitle">Data Scientist</h6>
+        <p class="card-text">I am an economist by training, turned programmer/data scientist who loves to program with <code>R</code>, <code>Python</code>, and <code>C++</code>.</p>
+        <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/davzim" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/dav_zim" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://stackoverflow.com/users/3048453/david" target="_blank" rel="noopener">
+        <i class="fab fa-stack-overflow"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.kaggle.com/davzim" target="_blank" rel="noopener">
+        <i class="fab fa-kaggle"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.linkedin.com/in/david-zimmermann-76a737a4/" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+</ul>
+
+      </div>
+    </div>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <div class="article-widget content-widget-hr">
+    <h3>Related</h3>
+    <ul>
+      
+      <li><a href="/blog/2017-11-30-introducing-ritch/">Introducing RITCH: Parsing ITCH Files in R (Finance &amp; Market Microstructure)</a></li>
+      
+      <li><a href="/blog/2016-10-24-oos-testing/">The Importance of Out-of-Sample Tests and Lags in Forecasts and Trading Algorithms</a></li>
+      
+      <li><a href="/blog/2016-05-24-gentle-capm-i/">A Gentle Introduction to Finance using R: Efficient Frontier and CAPM - Part 1</a></li>
+      
+      <li><a href="/blog/2016-01-15-speeding-bayesian-t-test/">Speeding &#34;Bayesian Power Analysis t-test&#34; up with Snowfall</a></li>
+      
+      <li><a href="/blog/2015-09-23-backtests-stock-returns/">Simulating backtests of stock returns using Monte-Carlo and snowfall in parallel</a></li>
+      
+    </ul>
+  </div>
+  
+
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js" integrity="sha256-eOgo0OtLL4cdq7RdwRUiGKLX9XsIJ7nGhWEKbohmVAQ=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/languages/cpp.min.js"></script>
+        
+      
+
+    
+
+    
+    
+
+    
+    
+    <script>const code_highlighting = true;</script>
+    
+
+    
+    
+    <script>const isSiteThemeDark = false;</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"No results found","placeholder":"Search...","results":"results found"};
+      const content_type = {
+        'post': "Posts",
+        'project': "Projects",
+        'publication' : "Publications",
+        'talk' : "Talks"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.cbb2418f8e248a2e58f5a15a2abbfed0.js"></script>
+
+    
+
+
+
+
+
+
+  
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    2023 &middot; 
+
+    David Zimmermann - Made with <a href="https://github.com/DavZim/davzim.github.io" target="_blank" rel="noopener"><i class="fab fa-github"></i></a>, the <a href="https://cran.r-project.org/" target="_blank" rel="noopener"><i class="fab fa-r-project"></i> </a><a href="https://github.com/rstudio/blogdown" target="_blank" rel="noopener">blogdown</a> package, and the 
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

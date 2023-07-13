@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>forecasting | Data Shenanigans</title>
-    <link>/tag/forecasting/</link>
-      <atom:link href="/tag/forecasting/index.xml" rel="self" type="application/rss+xml" />
+    <link>https://davzim.github.io/tag/forecasting/</link>
+      <atom:link href="https://davzim.github.io/tag/forecasting/index.xml" rel="self" type="application/rss+xml" />
     <description>forecasting</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Mon, 24 Oct 2016 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2023</copyright><lastBuildDate>Mon, 24 Oct 2016 00:00:00 +0000</lastBuildDate>
     <image>
-      <url>/images/logo.svg</url>
+      <url>https://davzim.github.io/images/logo.svg</url>
       <title>forecasting</title>
-      <link>/tag/forecasting/</link>
+      <link>https://davzim.github.io/tag/forecasting/</link>
     </image>
     
     <item>
       <title>The Importance of Out-of-Sample Tests and Lags in Forecasts and Trading Algorithms</title>
-      <link>/blog/2016-10-24-oos-testing/</link>
+      <link>https://davzim.github.io/blog/2016-10-24-oos-testing/</link>
       <pubDate>Mon, 24 Oct 2016 00:00:00 +0000</pubDate>
-      <guid>/blog/2016-10-24-oos-testing/</guid>
+      <guid>https://davzim.github.io/blog/2016-10-24-oos-testing/</guid>
       <description>
 
 
@@ -55,7 +55,7 @@ ggplot(df_none, aes(x = date, y = earnings)) +
   labs(x = &amp;quot;Date&amp;quot;, y = &amp;quot;Earnings Multiple&amp;quot;, title = &amp;quot;No Proper Tests&amp;quot;) +
   theme_light() +
   scale_y_continuous(labels = comma)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-10-24-oos-testing_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-10-24-oos-testing_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Something’s fishy!
 I wouldn’t expect a trading algorithm based on a simple linear regression to turn USD 1 initial investment into USD 25,876.65 after 6 years.
 Why does that performance seem so wrong? That is because an algorithm at the time of prediction wouldn’t have access to the data that we trained it on.
@@ -94,7 +94,7 @@ ggplot(df_plot, aes(x = date, y = value, color = variable)) +
   scale_color_manual(name = &amp;quot;Investment&amp;quot;, labels = c(&amp;quot;AAPL&amp;quot;, &amp;quot;Algorithm&amp;quot;),
                      values = c(&amp;quot;#1b7837&amp;quot;, &amp;quot;#762a83&amp;quot;)) + 
   theme_light()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-10-24-oos-testing_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-10-24-oos-testing_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;That looks a bit more reasonable, though still unrealistic.
 The algorithm outperforms the Apple stock by some magnitude of 6; an investment of USD 1 “only” gets turned into 25 (an annual growth rate of rougly 60%).
 This unreasonable high return is due to the fact that we still haven’t conducted a proper out-of-sample test.&lt;/p&gt;
@@ -156,7 +156,7 @@ ggplot(plot_df, aes(x = date, y = value, color = variable)) +
                      values = c(&amp;quot;#1b7837&amp;quot;, &amp;quot;#762a83&amp;quot;)) + 
   theme_light() + 
   facet_wrap(~type, scales = &amp;quot;free&amp;quot;, labeller = as_labeller(facet_names))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-10-24-oos-testing_files/figure-html/unnamed-chunk-5-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-10-24-oos-testing_files/figure-html/unnamed-chunk-5-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;As expected, the algorithm returns less than the stock it matches against (AAPL).
 If we would invest in this simple algorithm, I would expect our investment to go down a lot more.
 All of this is of course without considering trading, execution, and other transaction costs, which would even further decrease the returns of our trading algorithm.

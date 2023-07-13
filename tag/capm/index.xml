@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>capm | Data Shenanigans</title>
-    <link>/tag/capm/</link>
-      <atom:link href="/tag/capm/index.xml" rel="self" type="application/rss+xml" />
+    <link>https://davzim.github.io/tag/capm/</link>
+      <atom:link href="https://davzim.github.io/tag/capm/index.xml" rel="self" type="application/rss+xml" />
     <description>capm</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Tue, 24 May 2016 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2023</copyright><lastBuildDate>Tue, 24 May 2016 00:00:00 +0000</lastBuildDate>
     <image>
-      <url>/images/logo.svg</url>
+      <url>https://davzim.github.io/images/logo.svg</url>
       <title>capm</title>
-      <link>/tag/capm/</link>
+      <link>https://davzim.github.io/tag/capm/</link>
     </image>
     
     <item>
       <title>A Gentle Introduction to Finance using R: Efficient Frontier and CAPM - Part 1</title>
-      <link>/blog/2016-05-24-gentle-capm-i/</link>
+      <link>https://davzim.github.io/blog/2016-05-24-gentle-capm-i/</link>
       <pubDate>Tue, 24 May 2016 00:00:00 +0000</pubDate>
-      <guid>/blog/2016-05-24-gentle-capm-i/</guid>
+      <guid>https://davzim.github.io/blog/2016-05-24-gentle-capm-i/</guid>
       <description>
 
 
@@ -58,7 +58,7 @@ ggplot(dt, aes(x = date, y = idx_price, color = ticker)) +
   theme_bw() + ggtitle(&amp;quot;Price Developments&amp;quot;) +
   xlab(&amp;quot;Date&amp;quot;) + ylab(&amp;quot;Price\n(Indexed 2000 = 1)&amp;quot;) +
   scale_color_discrete(name = &amp;quot;Company&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-2-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-2-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Altough we can see that Google outperformed the other two, we can also see that it seems it was risikier to invest in Google, as shown by the large spikes and drawdowns.
 This is the principle of risk-return tradeoff that is fundamental to the CAPM.
 Usually, risk is defined as volatility, which is defined as the standard deviation of the returns
@@ -118,7 +118,7 @@ In our example it looks like this.&lt;/p&gt;
   xlab(&amp;quot;Volatility&amp;quot;) + ylab(&amp;quot;Expected Returns&amp;quot;) +
   scale_y_continuous(label = percent, limits = c(0, 0.03)) +
   scale_x_continuous(label = percent, limits = c(0, 0.1))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Given that you had to take only a single stock and given past performance indicates future performance (more on the assumptions later, but for now: historic performances almost never indicates future performances), you would probably choose Google as your best investment choice.
 However, the exclusive option is not realistic as there is something called diversification and you can reduce risk by buying multiple stocks.&lt;/p&gt;
 &lt;p&gt;Coming back to the examples from the beginning: If you had the choice between three fictive investments A (expected return of 5%, volatility of 4%), B (exp ret of 5%, volatility of 5%), or C (exp ret 6%, volatility of 5%), you would prefer A over B (we say A is efficient to B) as it has less volatility, and C over B as it has a higher expected return.
@@ -213,7 +213,7 @@ ggplot() +
   scale_x_continuous(label = percent, 
                      limits = c(0, max(two_assets$sd_p) * 1.2)) +
   scale_color_continuous(name = expression(omega[x]), labels = percent)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;With the color coding we can see that the upper point stands for stock x (&lt;span class=&#34;math inline&#34;&gt;\(\omega_x = 100%\)&lt;/span&gt;) and the lower point stands for stock y (&lt;span class=&#34;math inline&#34;&gt;\(\omega_x = 0%\)&lt;/span&gt;, thus &lt;span class=&#34;math inline&#34;&gt;\(\omega_y = 100%\)&lt;/span&gt;).
 We also see that all possible portfolios lay on a curve.
 That means the line stands for all possible portfolios combining the two assets.
@@ -296,7 +296,7 @@ ggplot() +
   scale_x_continuous(label = percent, limits = c(0, max(three_assets$sd_p) * 1.2)) +
   scale_color_gradientn(colors = c(&amp;quot;red&amp;quot;, &amp;quot;blue&amp;quot;, &amp;quot;yellow&amp;quot;),
                         name = expression(omega[x] - omega[z]), labels = percent)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-8-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-8-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;We see that the area of possible portfolios has expanded into a third dimension.
 The colors try to show the two different weights.
 A yellow color indicates a portfolio consisting mainly of the asset x, a blue color indicates asset y, and a red area indicates a portfolio of asset z.
@@ -410,7 +410,7 @@ ggplot(df_table, aes(x = sd, y = er)) +
   xlab(&amp;quot;Volatility&amp;quot;) + ylab(&amp;quot;Expected Returns&amp;quot;) +
   scale_y_continuous(label = percent, limits = c(0, max(df_table$er) * 1.2)) +
   scale_x_continuous(label = percent, limits = c(0, max(df_table$sd) * 1.2))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Given the values for &lt;span class=&#34;math inline&#34;&gt;\(\alpha\)&lt;/span&gt;, &lt;span class=&#34;math inline&#34;&gt;\(\beta\)&lt;/span&gt;, &lt;span class=&#34;math inline&#34;&gt;\(\gamma\)&lt;/span&gt;, and &lt;span class=&#34;math inline&#34;&gt;\(\delta\)&lt;/span&gt; we receive the function for the frontier as&lt;/p&gt;
 &lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[
 \hat{r}_{ef}(\sigma) = \frac{147.8}{4037.6} \pm \sqrt{\left(\frac{147.8}{4037.6}\right)^2 - \frac{6.0 - 2339.9 * \sigma^2}{4037.6}}.
@@ -476,7 +476,7 @@ plot_dt&lt;/code&gt;&lt;/pre&gt;
   xlab(&amp;quot;Volatility&amp;quot;) + ylab(&amp;quot;Expected Returns&amp;quot;) +
   scale_y_continuous(label = percent, limits = c(0, max(df_table$er) * 1.2)) +
   scale_x_continuous(label = percent, limits = c(0, max(df_table$sd) * 1.2))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Comparing the two scenarios we see that restricting the weights (prohibiting short-sells), we also restrict the number of possible portfolios.
 In some cases, restricting short-sells yields portfolios with less expected returns or a higher expected volatility.&lt;/p&gt;
 &lt;p&gt;To directly compare the two options we can use the following code.&lt;/p&gt;
@@ -508,7 +508,7 @@ ggplot() +
   scale_x_continuous(label = percent, limits = c(0, max(df_table$sd) * 1.2)) +
   scale_color_manual(name = &amp;quot;Short-Sells&amp;quot;, values = c(&amp;quot;red&amp;quot;, &amp;quot;blue&amp;quot;), labels = c(&amp;quot;Allowed&amp;quot;, &amp;quot;Prohibited&amp;quot;)) +
   scale_linetype_manual(name = &amp;quot;Efficient&amp;quot;, values = c(2, 1))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-13-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://davzim.github.io/blog/2016-05-24-gentle-capm-i_files/figure-html/unnamed-chunk-13-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;There are many ways to do this and I am certainly not claiming that this is the only option for portfolio selection, but the efficient frontier is a very useful tool to understand one of the basics of finance.
 The question of which portfolio of the efficient frontier is considered best within the model-frameworks, has to be left open in this part, but will be adressed using CAPM in part II.&lt;/p&gt;
 &lt;p&gt;This closes the first part of the series.
